@@ -27,22 +27,22 @@ func (s *nodeSender) Run() {
 	defer s.Stopped()
 
 	if RELEASE {
-		ext.AssertE(s.Conn.SetWriteDeadline(time.Now().Add(10 * time.Second)))
+		ext.ANoError(s.Conn.SetWriteDeadline(time.Now().Add(10 * time.Second)))
 	}
 	WriteBytes(s.Conn, GobEncode(MyInfo()))
 
 	for !s.StopRequested() {
 		source, target, msg := s.Pop()
 		data := s.Encode(msg)
-		ext.Assert(data != nil)
+		ext.ATrue(data != nil)
 
 		var buf bytes.Buffer
 
 		enc := gob.NewEncoder(&buf)
-		ext.AssertE(enc.Encode(source))
-		ext.AssertE(enc.Encode(target))
-		ext.AssertE(enc.Encode(len(data)))
-		ext.AssertE(enc.Encode(data))
+		ext.ANoError(enc.Encode(source))
+		ext.ANoError(enc.Encode(target))
+		ext.ANoError(enc.Encode(len(data)))
+		ext.ANoError(enc.Encode(data))
 
 		data = buf.Bytes()
 		if s.Compress != nil {
@@ -50,7 +50,7 @@ func (s *nodeSender) Run() {
 		}
 
 		if RELEASE {
-			ext.AssertE(s.Conn.SetWriteDeadline(time.Now().Add(time.Minute)))
+			ext.ANoError(s.Conn.SetWriteDeadline(time.Now().Add(time.Minute)))
 		}
 		WriteBytes(s.Conn, data)
 	}

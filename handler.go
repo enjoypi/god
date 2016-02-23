@@ -14,6 +14,6 @@ func NewHandlerBase(id PID) *HandlerBase {
 }
 
 func (h *HandlerBase) SendOut(target PID, msg Message) {
-	ext.Assert(h.PID != target)
+	ext.ATrue(h.PID != target)
 	h.Push(h.PID, target, msg)
 }

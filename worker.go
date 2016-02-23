@@ -28,7 +28,7 @@ func (w *worker) run() {
 	defer w.Stopped()
 	for !w.StopRequested() {
 		source, target, msg := w.Pop()
-		ext.Assert(source != target)
+		ext.ATrue(source != target)
 		// send to others
 		if source == w.PID {
 			w.BeforeSend(target, msg)

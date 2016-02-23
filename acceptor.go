@@ -14,7 +14,7 @@ type acceptor struct {
 
 func NewAcceptor(addr string, newAgent NewAgent) Stopper {
 	listener, err := net.Listen("tcp", addr)
-	ext.AssertE(err)
+	ext.ANoError(err)
 	a := &acceptor{Listener: listener, NewAgent: newAgent, stopper: NewStopper()}
 	go ext.PCall(a.Run)
 	return a

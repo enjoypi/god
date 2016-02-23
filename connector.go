@@ -15,6 +15,6 @@ func NewConnector(newAgent NewAgent) Connector {
 
 func (c *connector) Dial(address string) {
 	conn, err := net.Dial("tcp", address)
-	ext.AssertE(err)
+	ext.ANoError(err)
 	c.NewAgent(conn)
 }

@@ -28,15 +28,15 @@ func (r *nodeReceiver) Run() {
 	defer r.Conn.Close()
 
 	if RELEASE {
-		ext.AssertE(r.Conn.SetReadDeadline(time.Now().Add(10 * time.Second)))
+		ext.ANoError(r.Conn.SetReadDeadline(time.Now().Add(10 * time.Second)))
 	}
 	infoData := ReadBytes(r.Conn)
 
 	var info nodeInfo
 	GobDecode(infoData, &info)
 
-	ext.Assert(info.Cookie == MyInfo().Cookie)
-	ext.Assert(info.ID != MyInfo().ID)
+	ext.ATrue(info.Cookie == MyInfo().Cookie)
+	ext.ATrue(info.ID != MyInfo().ID)
 
 	r.nodeInfo = info
 	AddNode(r.ID, r.nodeInfo)
@@ -44,7 +44,7 @@ func (r *nodeReceiver) Run() {
 
 	for !r.StopRequested() {
 		if RELEASE {
-			ext.AssertE(r.Conn.SetReadDeadline(time.Now().Add(time.Minute)))
+			ext.ANoError(r.Conn.SetReadDeadline(time.Now().Add(time.Minute)))
 		}
 		data := ReadBytes(r.Conn)
 		if r.Decompress != nil {
@@ -57,12 +57,12 @@ func (r *nodeReceiver) Run() {
 
 		var source, target PID
 		var msgSize int
-		ext.AssertE(dec.Decode(source))
-		ext.AssertE(dec.Decode(target))
-		ext.AssertE(dec.Decode(msgSize))
+		ext.ANoError(dec.Decode(source))
+		ext.ANoError(dec.Decode(target))
+		ext.ANoError(dec.Decode(msgSize))
 
 		msg := r.Decode(buf.Bytes())
-		ext.Assert(msg != nil)
+		ext.ATrue(msg != nil)
 
 		Cast(source, target, msg)
 	}

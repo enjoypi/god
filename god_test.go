@@ -39,6 +39,8 @@ func TestStartNode(t *testing.T) {
 
 	producer, err = NewSession()
 	ext.AssertNoError(t, err, "new producer")
+	err = producer.Declare(exchange)
+	ext.AssertNoError(t, err, "declare exchange")
 	for i := 0; i < count; i++ {
 		err = producer.Post(exchange,
 			routingKeyType, routingKey,

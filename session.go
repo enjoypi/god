@@ -8,7 +8,6 @@ import (
 
 type Session struct {
 	*amqp.Channel
-	exchanges map[string]bool
 }
 
 func NewSession() (*Session, error) {
@@ -19,7 +18,6 @@ func NewSession() (*Session, error) {
 
 	var s Session
 	s.Channel = ch
-	s.exchanges = make(map[string]bool)
 	return &s, nil
 }
 
@@ -27,41 +25,8 @@ func combine(routingKeyType uint16, routingKey uint64) string {
 	return fmt.Sprintf("%d-%d", routingKeyType, routingKey)
 }
 
-func (s *Session) Post(exchange string,
-	routingKeyType uint16, routingKey uint64,
-	msgID uint64, msg []byte) error {
-
-	if !s.exchanges[exchange] {
-		err := s.ExchangeDeclare(
-			exchange, // name
-			"direct", // type
-			true,     // durable
-			false,    // auto-deleted
-			false,    // internal
-			false,    // no-wait
-			nil,      // arguments
-		)
-		if err != nil {
-			return err
-		}
-		s.exchanges[exchange] = true
-	}
-
-	err := s.Publish(
-		exchange, // exchange
-		combine(routingKeyType, routingKey), // routing key
-		false, // mandatory
-		false, // immediate
-		amqp.Publishing{
-			ContentType: "text/plain",
-			Body:        msg,
-		})
-	return err
-}
-
-func (s *Session) Subscribe(exchange string,
-	routingKeyType uint16, routingKey uint64) (string, error) {
-	err := s.ExchangeDeclare(
+func (s *Session) Declare(exchange string) error {
+	return s.ExchangeDeclare(
 		exchange, // name
 		"direct", // type
 		true,     // durable
@@ -70,6 +35,27 @@ func (s *Session) Subscribe(exchange string,
 		false,    // no-wait
 		nil,      // arguments
 	)
+}
+
+func (s *Session) Post(exchange string,
+	routingKeyType uint16, routingKey uint64,
+	msgID uint64, msg []byte) error {
+
+	return s.Publish(
+		exchange, // exchange
+		combine(routingKeyType, routingKey), // routing key
+		false, // mandatory
+		false, // immediate
+		amqp.Publishing{
+			DeliveryMode: amqp.Persistent,
+			ContentType:  "text/plain",
+			Body:         msg,
+		})
+}
+
+func (s *Session) Subscribe(exchange string,
+	routingKeyType uint16, routingKey uint64) (string, error) {
+	err := s.Declare(exchange)
 	if err != nil {
 		return "", err
 	}

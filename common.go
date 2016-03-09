@@ -1,9 +1,7 @@
 package god
 
 import (
-	"bytes"
 	"encoding/binary"
-	"encoding/gob"
 	"ext"
 	"io"
 )
@@ -21,29 +19,6 @@ func ReadBytes(r io.Reader) []byte {
 	ext.ANoError(binary.Read(r, DEFAULT_BYTE_ORDER, data))
 	ext.LogDebug("READ\t%d", size)
 	return data
-}
-
-func GobDecode(bin []byte, data interface{}) {
-	buf := bytes.NewBuffer(bin)
-	decoder := gob.NewDecoder(buf)
-	ext.ANoError(decoder.Decode(data))
-}
-
-func GobEncode(data interface{}) []byte {
-	var buf bytes.Buffer
-	encoder := gob.NewEncoder(&buf)
-	ext.ANoError(encoder.Encode(data))
-	return buf.Bytes()
-}
-
-func DefaultDecode(b []byte) Message {
-	var m Message
-	GobDecode(b, &m)
-	return m
-}
-
-func DefaultEncode(m Message) []byte {
-	return GobEncode(m)
 }
 
 func DefaultCompress(in []byte) []byte {

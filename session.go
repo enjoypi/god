@@ -11,7 +11,7 @@ type Session struct {
 }
 
 func NewSession() (*Session, error) {
-	ch, err := conn.Channel()
+	ch, err := self.Connection.Channel()
 	if err != nil {
 		return nil, err
 	}
@@ -22,13 +22,13 @@ func NewSession() (*Session, error) {
 }
 
 func combine(routingKeyType uint16, routingKey uint64) string {
-	return fmt.Sprintf("%d-%d", routingKeyType, routingKey)
+	return fmt.Sprintf("%d.%d", routingKeyType, routingKey)
 }
 
 func (s *Session) Declare(exchange string) error {
 	return s.ExchangeDeclare(
 		exchange, // name
-		"direct", // type
+		"topic",  // type
 		true,     // durable
 		false,    // auto-deleted
 		false,    // internal
@@ -39,13 +39,16 @@ func (s *Session) Declare(exchange string) error {
 
 func (s *Session) Post(exchange string,
 	routingKeyType uint16, routingKey uint64,
-	msgID uint64, msg []byte) error {
+	msg []byte) error {
+	return s.post(exchange, combine(routingKeyType, routingKey), msg)
+}
 
+func (s *Session) post(exchange string, routingKey string, msg []byte) error {
 	return s.Publish(
-		exchange, // exchange
-		combine(routingKeyType, routingKey), // routing key
-		false, // mandatory
-		false, // immediate
+		exchange,   // exchange
+		routingKey, // routing key
+		false,      // mandatory
+		false,      // immediate
 		amqp.Publishing{
 			DeliveryMode: amqp.Persistent,
 			ContentType:  "text/plain",
@@ -60,7 +63,19 @@ func (s *Session) Subscribe(exchange string,
 		return "", err
 	}
 
-	q, err := s.QueueDeclare(
+	q, err := s.declareQueue()
+	if err != nil {
+		return "", err
+	}
+
+	return q.Name,
+		s.bind(exchange,
+			q.Name,
+			combine(routingKeyType, routingKey))
+}
+
+func (s *Session) declareQueue() (amqp.Queue, error) {
+	return s.QueueDeclare(
 		"",    // name
 		false, // durable
 		false, // delete when usused
@@ -68,22 +83,15 @@ func (s *Session) Subscribe(exchange string,
 		false, // no-wait
 		nil,   // arguments
 	)
-	if err != nil {
-		return "", err
-	}
+}
 
-	err = s.QueueBind(
-		q.Name, // queue name
-		combine(routingKeyType, routingKey), // routing key
-		exchange, // exchange
+func (s *Session) bind(exchange string, queue string, routingKey string) error {
+	return s.QueueBind(
+		queue,      // queue name
+		routingKey, // routing key
+		exchange,   // exchange
 		false,
 		nil)
-	if err != nil {
-		return "", err
-	}
-
-	return q.Name, nil
-
 }
 
 func (s *Session) Pull(queue string) (<-chan amqp.Delivery, error) {
@@ -96,4 +104,22 @@ func (s *Session) Pull(queue string) (<-chan amqp.Delivery, error) {
 		false, // no-wait
 		nil,   // args
 	)
+}
+
+type Handler func(delivery *amqp.Delivery) error
+
+func (s *Session) Handle(queue string, handler Handler) error {
+	msgs, err := s.Pull(queue)
+	if err != nil {
+		return err
+	}
+
+	for d := range msgs {
+		err := handler(&d)
+		if err != nil {
+			return err
+		}
+		d.Ack(false)
+	}
+	return nil
 }

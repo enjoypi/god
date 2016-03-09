@@ -2,42 +2,52 @@ package god
 
 import "github.com/streadway/amqp"
 
-var (
-	conn     *amqp.Connection = nil
-	nodeType uint16           = 0
-	nodeID   uint64           = 0
+const (
+	adminExchange = "god.admin"
 )
+
+type node struct {
+	*amqp.Connection
+	*Session
+
+	kind uint16
+	ID   uint64
+}
+
+var self node
 
 func Start(url string, nodeType uint16, nodeID uint64) error {
 	c, err := amqp.Dial(url)
 	if err == nil {
-		conn = c
+		self.Connection = c
 		s, err := NewSession()
 		if err != nil {
 			s.Close()
 			return err
 		}
 
-		q, err := s.Subscribe("nodes", nodeType, nodeID)
+		q, err := s.Subscribe(adminExchange, nodeType, nodeID)
 		if err != nil {
 			s.Close()
 			return err
 		}
-		go handleNodeMsg(s, q)
+
+		self.Session = s
+		go self.Handle(q, handleAdmin)
 	}
 	return err
 }
 
 func Close() {
-	conn.Close()
+	self.Close()
 }
 
-func handleNodeMsg(session *Session, queue string) {
-	msgs, err := session.Pull(queue)
-	if err != nil {
-		return
-	}
-	for d := range msgs {
-		d.Ack(false)
-	}
+func postAdmin(msgID uint64, msg []byte) error {
+	return self.Post(adminExchange,
+		self.kind, self.ID,
+		msg)
+}
+
+func handleAdmin(*amqp.Delivery) error {
+	return nil
 }

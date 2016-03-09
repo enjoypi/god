@@ -44,7 +44,7 @@ func TestStartNode(t *testing.T) {
 	for i := 0; i < count; i++ {
 		err = producer.Post(exchange,
 			routingKeyType, routingKey,
-			0, []byte(fmt.Sprintf("hello world %d", i)))
+			[]byte(fmt.Sprintf("hello world %d", i)))
 		ext.AssertNoError(t, err, "post")
 	}
 

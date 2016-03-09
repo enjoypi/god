@@ -36,7 +36,7 @@ func Start(url string, nodeType uint16, nodeID uint64) error {
 		}
 
 		self.Session = s
-		go self.Handle(q, handleAdmin)
+		go self.Handle(q, self.dispatch)
 	}
 	return err
 }
@@ -51,6 +51,6 @@ func postAdmin(msg proto.Message) error {
 		msg)
 }
 
-func handleAdmin(*amqp.Delivery) error {
+func (n *node) dispatch(msg proto.Message) error {
 	return nil
 }

@@ -2,6 +2,7 @@ package god
 
 import (
 	"fmt"
+	"reflect"
 
 	"github.com/golang/protobuf/proto"
 	"github.com/streadway/amqp"
@@ -42,22 +43,20 @@ func (s *Session) Post(
 	exchange string,
 	routingKeyType uint16, routingKey uint64,
 	msg proto.Message) error {
-	b, err := proto.Marshal(msg)
+
+	body, err := proto.Marshal(msg)
 	if err != nil {
 		return err
 	}
-	return s.post(exchange, combine(routingKeyType, routingKey), b)
-}
-
-func (s *Session) post(exchange string, routingKey string, body []byte) error {
 	return s.Publish(
-		exchange,   // exchange
-		routingKey, // routing key
-		false,      // mandatory
-		false,      // immediate
+		exchange, // exchange
+		combine(routingKeyType, routingKey), // routing key
+		false, // mandatory
+		false, // immediate
 		amqp.Publishing{
 			DeliveryMode: amqp.Persistent,
-			ContentType:  "text/plain",
+			ContentType:  "application/octet-stream",
+			Type:         proto.MessageName(msg),
 			Body:         body,
 		})
 }
@@ -112,16 +111,24 @@ func (s *Session) Pull(queue string) (<-chan amqp.Delivery, error) {
 	)
 }
 
-type handler func(delivery *amqp.Delivery) error
+type Dispatch func(msg proto.Message) error
 
-func (s *Session) Handle(queue string, h handler) error {
+func (s *Session) Handle(queue string, dispatch Dispatch) error {
 	msgs, err := s.Pull(queue)
 	if err != nil {
 		return err
 	}
 
 	for d := range msgs {
-		err := h(&d)
+		msgType := proto.MessageType(d.Type).Elem()
+		msg := reflect.New(msgType).Interface().(proto.Message)
+
+		err := proto.Unmarshal(d.Body, msg)
+		if err != nil {
+			return err
+		}
+
+		err = dispatch(msg)
 		if err != nil {
 			return err
 		}

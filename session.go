@@ -3,6 +3,7 @@ package god
 import (
 	"fmt"
 
+	"github.com/golang/protobuf/proto"
 	"github.com/streadway/amqp"
 )
 
@@ -37,13 +38,18 @@ func (s *Session) Declare(exchange string) error {
 	)
 }
 
-func (s *Session) Post(exchange string,
+func (s *Session) Post(
+	exchange string,
 	routingKeyType uint16, routingKey uint64,
-	msg []byte) error {
-	return s.post(exchange, combine(routingKeyType, routingKey), msg)
+	msg proto.Message) error {
+	b, err := proto.Marshal(msg)
+	if err != nil {
+		return err
+	}
+	return s.post(exchange, combine(routingKeyType, routingKey), b)
 }
 
-func (s *Session) post(exchange string, routingKey string, msg []byte) error {
+func (s *Session) post(exchange string, routingKey string, body []byte) error {
 	return s.Publish(
 		exchange,   // exchange
 		routingKey, // routing key
@@ -52,7 +58,7 @@ func (s *Session) post(exchange string, routingKey string, msg []byte) error {
 		amqp.Publishing{
 			DeliveryMode: amqp.Persistent,
 			ContentType:  "text/plain",
-			Body:         msg,
+			Body:         body,
 		})
 }
 
@@ -106,16 +112,16 @@ func (s *Session) Pull(queue string) (<-chan amqp.Delivery, error) {
 	)
 }
 
-type Handler func(delivery *amqp.Delivery) error
+type handler func(delivery *amqp.Delivery) error
 
-func (s *Session) Handle(queue string, handler Handler) error {
+func (s *Session) Handle(queue string, h handler) error {
 	msgs, err := s.Pull(queue)
 	if err != nil {
 		return err
 	}
 
 	for d := range msgs {
-		err := handler(&d)
+		err := h(&d)
 		if err != nil {
 			return err
 		}

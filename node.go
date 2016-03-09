@@ -1,6 +1,9 @@
 package god
 
-import "github.com/streadway/amqp"
+import (
+	"github.com/golang/protobuf/proto"
+	"github.com/streadway/amqp"
+)
 
 const (
 	adminExchange = "god.admin"
@@ -42,7 +45,7 @@ func Close() {
 	self.Close()
 }
 
-func postAdmin(msgID uint64, msg []byte) error {
+func postAdmin(msg proto.Message) error {
 	return self.Post(adminExchange,
 		self.kind, self.ID,
 		msg)

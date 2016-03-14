@@ -2,23 +2,20 @@ syntax = "proto3";
 
 package god;
 
-enum NODE_TYPE {
-    NONE    = 0;
-    MASTER = 1;
+enum ErrorCode {
+    OK = 0;
 }
 
 message AuthReq {
     string cookie = 1;
+    uint64 ID = 2;
 }
 
 message AuthAck {
-    enum Code {
-        OK = 0;
-    };
-    Code code = 1;
+    ErrorCode code = 1;
 }
 
-service MasterService {
+service Node {
   rpc Auth(AuthReq) returns (AuthAck);
 }
 

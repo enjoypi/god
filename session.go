@@ -42,12 +42,14 @@ func (s *Session) Declare(exchange string) error {
 func (s *Session) Post(
 	exchange string,
 	routingKeyType uint16, routingKey uint64,
+	method string,
 	msg proto.Message) error {
 
 	body, err := proto.Marshal(msg)
 	if err != nil {
 		return err
 	}
+
 	return s.Publish(
 		exchange, // exchange
 		combine(routingKeyType, routingKey), // routing key
@@ -57,6 +59,7 @@ func (s *Session) Post(
 			DeliveryMode: amqp.Persistent,
 			ContentType:  "application/octet-stream",
 			Type:         proto.MessageName(msg),
+			MessageId:    method,
 			Body:         body,
 		})
 }
@@ -111,7 +114,7 @@ func (s *Session) Pull(queue string) (<-chan amqp.Delivery, error) {
 	)
 }
 
-type Dispatch func(msg proto.Message) error
+type Dispatch func(method string, msg proto.Message) error
 
 func (s *Session) Handle(queue string, dispatch Dispatch) error {
 	msgs, err := s.Pull(queue)
@@ -128,7 +131,7 @@ func (s *Session) Handle(queue string, dispatch Dispatch) error {
 			return err
 		}
 
-		err = dispatch(msg)
+		err = dispatch(d.MessageId, msg)
 		if err != nil {
 			return err
 		}

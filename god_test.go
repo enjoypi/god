@@ -27,7 +27,8 @@ func TestGod(t *testing.T) {
 	ext.AssertNoError(t, err, "pull msgs")
 	ci := int64(0)
 	go consumer.Handle(q,
-		func(msg proto.Message) error {
+		func(method string, msg proto.Message) error {
+			ext.CheckEqual(t, method, "Test")
 			test := msg.(*Test)
 			ext.CheckEqual(t, test.Count, ci)
 			ci++
@@ -42,7 +43,7 @@ func TestGod(t *testing.T) {
 		test.Count = i
 		err = producer.Post(exchange,
 			routingKeyType, routingKey,
-			&test)
+			"Test", &test)
 		ext.AssertNoError(t, err, "post")
 	}
 

@@ -28,8 +28,9 @@ func TestGod(t *testing.T) {
 	require.NoError(t, err, "pull msgs")
 	ci := int64(0)
 	go consumer.Handle(q,
-		func(method string, msg proto.Message) error {
+		func(service string, method string, msg proto.Message) error {
 			require.Equal(t, method, "Test")
+			require.Equal(t, service, "Test")
 			test := msg.(*Test)
 			require.Equal(t, test.Count, ci)
 			ci++
@@ -44,7 +45,7 @@ func TestGod(t *testing.T) {
 		test.Count = i
 		err = producer.Post(exchange,
 			routingKeyType, routingKey,
-			"Test", &test)
+			"Test", "Test", &test)
 		require.NoError(t, err, "post")
 	}
 

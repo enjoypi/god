@@ -4,12 +4,22 @@ import (
 	"fmt"
 	"reflect"
 
+	"google.golang.org/grpc"
+
 	"github.com/golang/protobuf/proto"
 	"github.com/streadway/amqp"
 )
 
+// service consists of the information of the server serving this service and
+// the methods in this service.
+type service struct {
+	server interface{} // the server for service methods
+	md     map[string]*grpc.MethodDesc
+}
+
 type Session struct {
 	*amqp.Channel
+	m map[string]*service // service name -> service info
 }
 
 func NewSession() (*Session, error) {
@@ -42,6 +52,7 @@ func (s *Session) Declare(exchange string) error {
 func (s *Session) Post(
 	exchange string,
 	routingKeyType uint16, routingKey uint64,
+	service string,
 	method string,
 	msg proto.Message) error {
 
@@ -61,6 +72,7 @@ func (s *Session) Post(
 			Type:         proto.MessageName(msg),
 			MessageId:    method,
 			Body:         body,
+			AppId:        service,
 		})
 }
 
@@ -114,7 +126,25 @@ func (s *Session) Pull(queue string) (<-chan amqp.Delivery, error) {
 	)
 }
 
-type Dispatch func(method string, msg proto.Message) error
+func (s *Session) register(sd *grpc.ServiceDesc, ss interface{}) {
+	if s.m == nil {
+		s.m = make(map[string]*service)
+	}
+
+	if _, ok := s.m[sd.ServiceName]; ok {
+	}
+	srv := &service{
+		server: ss,
+		md:     make(map[string]*grpc.MethodDesc),
+	}
+	for i := range sd.Methods {
+		d := &sd.Methods[i]
+		srv.md[d.MethodName] = d
+	}
+	s.m[sd.ServiceName] = srv
+}
+
+type Dispatch func(service string, method string, msg proto.Message) error
 
 func (s *Session) Handle(queue string, dispatch Dispatch) error {
 	msgs, err := s.Pull(queue)
@@ -123,17 +153,34 @@ func (s *Session) Handle(queue string, dispatch Dispatch) error {
 	}
 
 	for d := range msgs {
-		msgType := proto.MessageType(d.Type).Elem()
-		msg := reflect.New(msgType).Interface().(proto.Message)
+		if dispatch != nil {
+			msgType := proto.MessageType(d.Type).Elem()
+			msg := reflect.New(msgType).Interface().(proto.Message)
+			if err := proto.Unmarshal(d.Body, msg); err != nil {
+				return err
+			}
 
-		err := proto.Unmarshal(d.Body, msg)
-		if err != nil {
-			return err
-		}
+			if err := dispatch(d.AppId, d.MessageId, msg); err != nil {
+				return err
+			}
+		} else {
+			srv := s.m[d.AppId]
+			if srv == nil {
+				break
+			}
 
-		err = dispatch(d.MessageId, msg)
-		if err != nil {
-			return err
+			md := srv.md[d.MessageId]
+			if md == nil {
+				break
+			}
+
+			_, err := md.Handler(srv.server, nil,
+				func(msg interface{}) error {
+					return proto.Unmarshal(d.Body, msg.(proto.Message))
+				})
+			if err != nil {
+				return err
+			}
 		}
 		d.Ack(false)
 	}

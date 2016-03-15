@@ -5,19 +5,12 @@ import (
 
 	"github.com/golang/protobuf/proto"
 	"github.com/streadway/amqp"
-	"google.golang.org/grpc"
+	"golang.org/x/net/context"
 )
 
 const (
 	adminExchange = "god.admin"
 )
-
-// service consists of the information of the server serving this service and
-// the methods in this service.
-type service struct {
-	server interface{} // the server for service methods
-	md     map[string]*grpc.MethodDesc
-}
 
 type node struct {
 	*amqp.Connection
@@ -25,7 +18,6 @@ type node struct {
 
 	kind uint16
 	id   uint64
-	m    map[string]*service // service name -> service info
 }
 
 var self node
@@ -52,14 +44,13 @@ func Start(url string, nodeType uint16, nodeID uint64) error {
 	self.Session = s
 	self.kind = nodeType
 	self.id = nodeID
-	self.m = make(map[string]*service)
 
 	var req AuthReq
 	req.ID = nodeID
 	postAdmin("Auth", &req)
 
-	self.register(&_Node_serviceDesc, newServer())
-	go self.Handle(q, self.dispatch)
+	self.register(&_Node_serviceDesc, &self)
+	go self.Handle(q, nil)
 	return nil
 }
 
@@ -67,38 +58,13 @@ func Close() {
 	self.Close()
 }
 
-func (s *node) register(sd *grpc.ServiceDesc, ss interface{}) {
-	if _, ok := s.m[sd.ServiceName]; ok {
-	}
-	srv := &service{
-		server: ss,
-		md:     make(map[string]*grpc.MethodDesc),
-	}
-	for i := range sd.Methods {
-		d := &sd.Methods[i]
-		srv.md[d.MethodName] = d
-	}
-	s.m[sd.ServiceName] = srv
-}
-
 func postAdmin(method string, msg proto.Message) error {
 	return self.Post(adminExchange,
 		self.kind, self.id,
-		method, msg)
+		"god.Node", method, msg)
 }
 
-func (n *node) dispatch(method string, msg proto.Message) error {
-	srv := n.m[_Node_serviceDesc.ServiceName]
-	if srv == nil {
-		return nil
-	}
-
-	md := srv.md[method]
-	if md == nil {
-		return nil
-	}
-
-	out, err := md.Handler(srv.server, nil, func(interface{}) error { return nil })
-	ext.LogDebug("%#v\t%#v", msg, out)
-	return err
+func (n *node) Auth(c context.Context, req *AuthReq) (*AuthAck, error) {
+	ext.LogDebug("%#v", req)
+	return &AuthAck{Code: ErrorCode_OK}, nil
 }

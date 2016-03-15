@@ -15,7 +15,7 @@ message AuthAck {
     ErrorCode code = 1;
 }
 
-service Node {
+service Admin {
   rpc Auth(AuthReq) returns (AuthAck);
 }
 

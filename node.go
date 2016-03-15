@@ -15,6 +15,7 @@ const (
 type node struct {
 	*amqp.Connection
 	*Session
+	AdminServer
 
 	kind uint16
 	id   uint64
@@ -49,7 +50,7 @@ func Start(url string, nodeType uint16, nodeID uint64) error {
 	req.ID = nodeID
 	postAdmin("Auth", &req)
 
-	self.register(&_Node_serviceDesc, &self)
+	self.register(&_Admin_serviceDesc, &self)
 	go self.Handle(q, nil)
 	return nil
 }
@@ -61,7 +62,7 @@ func Close() {
 func postAdmin(method string, msg proto.Message) error {
 	return self.Post(adminExchange,
 		self.kind, self.id,
-		"god.Node", method, msg)
+		"god.Admin", method, msg)
 }
 
 func (n *node) Auth(c context.Context, req *AuthReq) (*AuthAck, error) {

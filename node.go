@@ -9,17 +9,18 @@ import (
 )
 
 const (
-	adminExchange = "god.admin"
+	adminService = "god.Admin"
 )
 
 type node struct {
 	*amqp.Connection
 	*Session
-	AdminServer
 
 	kind uint16
 	id   uint64
 }
+
+var _ AdminServer = (*node)(nil)
 
 var self node
 
@@ -36,7 +37,7 @@ func Start(url string, nodeType uint16, nodeID uint64) error {
 		return err
 	}
 
-	q, err := s.Subscribe(adminExchange, nodeType, nodeID)
+	q, err := s.Subscribe(adminService, nodeType, nodeID)
 	if err != nil {
 		s.Close()
 		return err
@@ -60,9 +61,9 @@ func Close() {
 }
 
 func postAdmin(method string, msg proto.Message) error {
-	return self.Post(adminExchange,
+	return self.Post(adminService,
 		self.kind, self.id,
-		"god.Admin", method, msg)
+		adminService, method, msg)
 }
 
 func (n *node) Auth(c context.Context, req *AuthReq) (*AuthAck, error) {

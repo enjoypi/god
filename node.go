@@ -1,8 +1,7 @@
 package god
 
 import (
-	"ext"
-
+	log "github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
 	"github.com/streadway/amqp"
 	"golang.org/x/net/context"
@@ -67,6 +66,6 @@ func postAdmin(method string, msg proto.Message) error {
 }
 
 func (n *node) Auth(c context.Context, req *AuthReq) (*AuthAck, error) {
-	ext.LogDebug("%#v", req)
+	log.Infof("%#v", req)
 	return &AuthAck{Code: ErrorCode_OK}, nil
 }

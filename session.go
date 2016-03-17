@@ -181,6 +181,7 @@ func (s *Session) Handle(queue string, dispatch Dispatch) error {
 			if err != nil {
 				return err
 			}
+
 		}
 		d.Ack(false)
 	}

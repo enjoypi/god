@@ -3,6 +3,7 @@ package god
 import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
+	"github.com/nsf/termbox-go"
 	"github.com/streadway/amqp"
 	"golang.org/x/net/context"
 )
@@ -53,6 +54,19 @@ func Start(url string, nodeType uint16, nodeID uint64) error {
 	self.register(&_Admin_serviceDesc, &self)
 	go self.Handle(q, nil)
 	return nil
+}
+
+func RunConsole() error {
+	if err := termbox.Init(); err != nil {
+		return err
+	}
+
+	for {
+		switch ev := termbox.PollEvent(); ev.Type {
+		case termbox.EventKey:
+			termbox.Flush()
+		}
+	}
 }
 
 func Close() {

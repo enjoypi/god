@@ -1,8 +1,21 @@
 package god
 
-import "go.etcd.io/etcd/clientv3"
+import (
+	"time"
+)
+
+const defaultTimeout = 60 * time.Second
 
 type Config struct {
-	NodePath string
-	Etcd     clientv3.Config
+	ListenAddress string
+	NodePath      string
+	EtcdTTL       int64
+
+	//Etcd     etcdclient.Config
+	Node
+}
+
+type Node struct {
+	Type string
+	ID   uint16
 }

@@ -1,0 +1,6 @@
+syntax = "proto3";
+import "admin.proto";
+option go_package = ".;pb";
+package pb;
+
+service Node { rpc Auth(AuthReq) returns (AuthAck); }

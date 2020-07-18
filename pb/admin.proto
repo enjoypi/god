@@ -1,0 +1,12 @@
+syntax = "proto3";
+option go_package = ".;pb";
+package pb;
+
+enum ErrorCode { OK = 0; }
+
+message AuthReq {
+  string cookie = 1;
+  uint64 ID = 2;
+}
+
+message AuthAck { ErrorCode code = 1; }

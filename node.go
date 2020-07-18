@@ -1,34 +1,28 @@
 package god
 
 import (
-	"context"
-	"time"
+	"log"
+	"net"
 
-	"go.etcd.io/etcd/clientv3"
 	"go.uber.org/zap"
+	"google.golang.org/grpc"
+
+	"github.com/enjoypi/god/pb"
 )
 
-const defaultTimeout = 5 * time.Second
+type server struct {
+	pb.UnimplementedNodeServer
+}
 
-func StartNode(cfg *Config, logger *zap.Logger) error {
-	ecfg := cfg.Etcd
-	if ecfg.DialTimeout == 0 {
-		ecfg.DialTimeout = defaultTimeout
-	}
-
-	cli, err := clientv3.New(ecfg)
+func Start(cfg *Config, logger *zap.Logger) error {
+	lis, err := net.Listen("tcp", cfg.ListenAddress)
 	if err != nil {
-		return err
+		log.Fatalf("failed to listen: %v", err)
 	}
-	defer cli.Close()
-
-	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
-	resp, err := cli.Get(ctx, cfg.NodePath)
-	cancel()
-	if err != nil {
-		return err
+	s := grpc.NewServer()
+	pb.RegisterNodeServer(s, &server{})
+	if err := s.Serve(lis); err != nil {
+		log.Fatalf("failed to serve: %v", err)
 	}
-	// use the response
-	resp.OpResponse()
 	return nil
 }

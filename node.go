@@ -4,9 +4,9 @@ import (
 	"context"
 	"net"
 
+	"github.com/enjoypi/god/pb"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
-	"github.com/enjoypi/god/pb"
 )
 
 type server struct {

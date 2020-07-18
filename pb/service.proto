@@ -3,4 +3,7 @@ import "admin.proto";
 option go_package = ".;pb";
 package pb;
 
-service Node { rpc Auth(AuthReq) returns (AuthAck); }
+service Node {
+  rpc Auth(AuthReq) returns (AuthAck);
+  rpc AlwaysAuth(stream AuthReq) returns (stream AuthAck);
+}

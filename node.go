@@ -1,28 +1,33 @@
 package god
 
 import (
-	"log"
+	"context"
 	"net"
 
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
-
 	"github.com/enjoypi/god/pb"
 )
 
 type server struct {
 	pb.UnimplementedNodeServer
+	*zap.Logger
 }
 
 func Start(cfg *Config, logger *zap.Logger) error {
 	lis, err := net.Listen("tcp", cfg.ListenAddress)
 	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
+		return err
 	}
+
 	s := grpc.NewServer()
-	pb.RegisterNodeServer(s, &server{})
-	if err := s.Serve(lis); err != nil {
-		log.Fatalf("failed to serve: %v", err)
-	}
-	return nil
+	pb.RegisterNodeServer(s, &server{Logger: logger})
+
+	logger.Info(lis.Addr().String())
+	return s.Serve(lis)
+}
+
+func (s *server) Auth(ctx context.Context, in *pb.AuthReq) (*pb.AuthAck, error) {
+	s.Logger.Debug("Received:", zap.String("cookie", in.GetCookie()))
+	return &pb.AuthAck{Code: pb.ErrorCode_OK}, nil
 }

@@ -14,6 +14,7 @@ def run():
     with grpc.insecure_channel('localhost:50051') as channel:
         stub = service_pb2_grpc.NodeStub(channel)
         response = stub.Auth(admin_pb2.AuthReq(cookie='you'))
+        response = stub.AlwaysAuth(admin_pb2.AuthReq(cookie='you'))
     print("client received: ", admin_pb2.ErrorCode.Name(response.code))
 
 

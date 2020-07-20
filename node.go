@@ -15,6 +15,9 @@ type server struct {
 }
 
 func Start(cfg *Config, logger *zap.Logger) error {
+	if cfg.ID <= 0 {
+		return ErrInvalidNodeID
+	}
 	lis, err := net.Listen("tcp", cfg.ListenAddress)
 	if err != nil {
 		return err
@@ -28,6 +31,6 @@ func Start(cfg *Config, logger *zap.Logger) error {
 }
 
 func (s *server) Auth(ctx context.Context, in *pb.AuthReq) (*pb.AuthAck, error) {
-	s.Logger.Debug("Received:", zap.String("cookie", in.GetCookie()))
+	s.Logger.Debug(in.String())
 	return &pb.AuthAck{Code: pb.ErrorCode_OK}, nil
 }

@@ -5,8 +5,9 @@ package pb;
 enum ErrorCode { OK = 0; }
 
 message AuthReq {
-  string cookie = 1;
-  uint64 ID = 2;
+  uint32 serial = 1;
+  string cookie = 2;
+  uint64 ID = 3;
 }
 
 message AuthAck { ErrorCode code = 1; }

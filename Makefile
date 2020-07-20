@@ -2,8 +2,14 @@
 .DEFAULT_GOAL=all
 
 # A phony target is one that is not really the name of a file; rather it is just a name for a recipe to be executed when you make an explicit request. There are two reasons to use a phony target: to avoid a conflict with a file of the same name, and to improve performance.
-.PHONY: all protocol msgid fmt clean mostlyclean distclean realclean clobber install print tar shar dist TAGS check test
+.PHONY: all protocol fmt clean mostlyclean distclean realclean clobber install print tar shar dist TAGS check test
 
+# Make all the top-level targets the makefile knows about.
+GO_FILES=$(wildcard *.go)
+
+all: protocol
+
+# Generate all protocol
 PROTO_PATH=pb
 PROTO_FILES=$(wildcard $(PROTO_PATH)/*.proto)
 
@@ -13,30 +19,25 @@ PB_GO_FILES=$(patsubst $(PROTO_PATH)/%.proto,$(PB_GO_PATH)/%.pb.go,$(PROTO_FILES
 PB_PY_PATH=py
 PB_PY_FILES=$(patsubst $(PROTO_PATH)/%.proto,$(PB_PY_PATH)/%_pb2.py,$(PROTO_FILES))
 
-# Make all the top-level targets the makefile knows about.
-all: protocol
-
-# Generate all protocol
 protocol: $(PB_GO_FILES) $(PB_PY_FILES)
 
 # *.proto to *.pb.go
-%.pb.go: %.proto
+$(PB_GO_PATH)/%.pb.go: $(PROTO_PATH)/%.proto
 	@echo generating $@
 	@protoc --proto_path=$(PROTO_PATH)/ --gofast_out=plugins=grpc:$(PB_GO_PATH)/ $(patsubst $(PB_GO_PATH)/%.pb.go,$(PROTO_PATH)/%.proto,$@)
 
-%_pb2.py: %.proto
+$(PB_PY_PATH)/%_pb2.py: $(PROTO_PATH)/%.proto
 	@echo generating $@
-	@echo python -m grpc_tools.protoc -I$(PROTO_PATH)/ --python_out=$(PB_PY_PATH)/ --grpc_python_out=$(PB_PY_PATH)/ $(patsubst $(PB_PY_PATH)/%_pb2.py,$(PROTO_PATH)/%.proto,$@)
+	@python -m grpc_tools.protoc -I$(PROTO_PATH)/ --python_out=$(PB_PY_PATH)/ --grpc_python_out=$(PB_PY_PATH)/ $(patsubst $(PB_PY_PATH)/%_pb2.py,$(PROTO_PATH)/%.proto,$@)
 
 # Format all sources
 fmt: $(GO_FILES) $(PROTO_FILES)
-	goimports -w $(GO_FILES) $(PB_GO_FILES)
+	goimports -w $(GO_FILES)
 	clang-format -i $(PROTO_FILES)
-
 
 # Delete all files that are normally created by running make.
 clean:
-	git clean -dxf
+	rm -f $(PB_GO_FILES) $(PB_PY_PATH)/*_pb2*.py
 
 # Like ‘clean’, but may refrain from deleting a few files that people normally don’t want to recompile. For example, the ‘mostlyclean’ target for GCC does not delete libgcc.a, because recompiling it is rarely necessary and takes a lot of time.
 mostlyclean:
@@ -45,6 +46,7 @@ mostlyclean:
 distclean:
 realclean:
 clobber:
+	git clean -dxf
 
 # Copy the executable file into a directory that users typically search for commands; copy any auxiliary files that the executable uses into the directories where it will look for them.
 install:
@@ -52,6 +54,7 @@ install:
 # Print listings of the source files that have changed.
 print:
 	@echo $(PROTO_FILES)
+	@echo $(GO_FILES)
 	@echo $(PB_GO_FILES)
 	@echo $(PB_PY_FILES)
 
@@ -69,4 +72,5 @@ TAGS:
 
 # Perform self tests on the program this makefile builds.
 check:
-test:
+test: protocol
+	@python py/client.py

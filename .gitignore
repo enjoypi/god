@@ -13,4 +13,12 @@
 
 # Dependency directories (remove the comment below to include it)
 # vendor/
+
+# Output of Protocol Buffers
+*.pb.go
+*_pb2.py
+*_pb2_grpc.py
+
+#
 go.sum
+

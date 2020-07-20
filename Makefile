@@ -7,7 +7,7 @@
 # Make all the top-level targets the makefile knows about.
 GO_FILES=$(wildcard *.go)
 
-all: protocol
+all: test
 
 # Generate all protocol
 PROTO_PATH=pb

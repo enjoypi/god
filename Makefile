@@ -16,8 +16,8 @@ PROTO_FILES=$(wildcard $(PROTO_PATH)/*.proto)
 PB_GO_PATH=pb
 PB_GO_FILES=$(patsubst $(PROTO_PATH)/%.proto,$(PB_GO_PATH)/%.pb.go,$(PROTO_FILES))
 
-PB_PY_PATH=py
-PB_PY_FILES=$(patsubst $(PROTO_PATH)/%.proto,$(PB_PY_PATH)/%_pb2.py,$(PROTO_FILES))
+TEST_PATH=test
+PB_PY_FILES=$(patsubst $(PROTO_PATH)/%.proto,$(TEST_PATH)/%_pb2.py,$(PROTO_FILES))
 
 protocol: $(PB_GO_FILES) $(PB_PY_FILES)
 
@@ -26,9 +26,9 @@ $(PB_GO_PATH)/%.pb.go: $(PROTO_PATH)/%.proto
 	@echo generating $@
 	@protoc --proto_path=$(PROTO_PATH)/ --gofast_out=plugins=grpc:$(PB_GO_PATH)/ $(patsubst $(PB_GO_PATH)/%.pb.go,$(PROTO_PATH)/%.proto,$@)
 
-$(PB_PY_PATH)/%_pb2.py: $(PROTO_PATH)/%.proto
+$(TEST_PATH)/%_pb2.py: $(PROTO_PATH)/%.proto
 	@echo generating $@
-	@python -m grpc_tools.protoc -I$(PROTO_PATH)/ --python_out=$(PB_PY_PATH)/ --grpc_python_out=$(PB_PY_PATH)/ $(patsubst $(PB_PY_PATH)/%_pb2.py,$(PROTO_PATH)/%.proto,$@)
+	@python -m grpc_tools.protoc -I$(PROTO_PATH)/ --python_out=$(TEST_PATH)/ --grpc_python_out=$(TEST_PATH)/ $(patsubst $(TEST_PATH)/%_pb2.py,$(PROTO_PATH)/%.proto,$@)
 
 # Format all sources
 fmt: $(GO_FILES) $(PROTO_FILES)
@@ -37,7 +37,7 @@ fmt: $(GO_FILES) $(PROTO_FILES)
 
 # Delete all files that are normally created by running make.
 clean:
-	rm -f $(PB_GO_FILES) $(PB_PY_PATH)/*_pb2*.py
+	rm -f $(PB_GO_FILES) $(TEST_PATH)/*_pb2*.py
 
 # Like ‘clean’, but may refrain from deleting a few files that people normally don’t want to recompile. For example, the ‘mostlyclean’ target for GCC does not delete libgcc.a, because recompiling it is rarely necessary and takes a lot of time.
 mostlyclean:
@@ -73,4 +73,4 @@ TAGS:
 # Perform self tests on the program this makefile builds.
 check:
 test: protocol
-	@python py/client.py
+	@cd $(TEST_PATH) && python client.py

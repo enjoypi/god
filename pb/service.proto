@@ -1,9 +1,30 @@
 syntax = "proto3";
-import "admin.proto";
 option go_package = ".;pb";
 package pb;
 
 service Node {
   rpc Auth(AuthReq) returns (AuthAck);
-  rpc AlwaysAuth(stream AuthReq) returns (stream AuthAck);
+  rpc Ping(Heartbeat) returns (Heartbeat);
+
+  rpc Flow(stream Header) returns (stream Header);
+}
+
+message Header {
+  uint32 serial = 1;
+  uint32 messageType = 2;
+  uint32 srcNode = 3;
+  uint32 srcActor = 4;
+}
+
+message Test { uint32 serial = 1; }
+
+enum ErrorCode { OK = 0; }
+
+message AuthReq { string cookie = 1; }
+
+message AuthAck { ErrorCode code = 1; }
+
+message Heartbeat {
+  int64 timestamp = 1;
+  int64 toTimestamp = 2;
 }

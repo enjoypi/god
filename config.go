@@ -12,10 +12,10 @@ type Config struct {
 	EtcdTTL       int64
 
 	//Etcd     etcdclient.Config
-	Node
+	Node NodeConfig
 }
 
-type Node struct {
+type NodeConfig struct {
 	Type string
 	ID   uint16
 }

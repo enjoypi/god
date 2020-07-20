@@ -7,7 +7,7 @@
 # Make all the top-level targets the makefile knows about.
 GO_FILES=$(wildcard *.go)
 
-all: test
+all: protocol fmt
 
 # Generate all protocol
 PROTO_PATH=pb
@@ -24,7 +24,7 @@ protocol: $(PB_GO_FILES) $(PB_PY_FILES)
 # *.proto to *.pb.go
 $(PB_GO_PATH)/%.pb.go: $(PROTO_PATH)/%.proto
 	@echo generating $@
-	@protoc --proto_path=$(PROTO_PATH)/ --gofast_out=plugins=grpc:$(PB_GO_PATH)/ $(patsubst $(PB_GO_PATH)/%.pb.go,$(PROTO_PATH)/%.proto,$@)
+	@protoc --proto_path=$(PROTO_PATH)/ --go_out=plugins=grpc:$(PB_GO_PATH)/ $(patsubst $(PB_GO_PATH)/%.pb.go,$(PROTO_PATH)/%.proto,$@)
 
 $(TEST_PATH)/%_pb2.py: $(PROTO_PATH)/%.proto
 	@echo generating $@

@@ -1,10 +1,11 @@
-package god
+package mesh
 
 import (
+	"github.com/enjoypi/god"
 	"go.uber.org/zap"
 )
 
-func initEtcd(cfg *Config, logger *zap.Logger) error {
+func initEtcd(cfg *god.Config, logger *zap.Logger) error {
 
 	//ecfg := cfg.Etcd
 	//if ecfg.DialTimeout == 0 {

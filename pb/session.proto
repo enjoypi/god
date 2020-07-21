@@ -5,8 +5,8 @@ package pb;
 service Session {
   rpc Flow(stream Header) returns (stream Header);
 
-  rpc Auth(AuthReq) returns (AuthAck);
-  rpc Ping(Heartbeat) returns (Heartbeat);
+  //  rpc Flow(AuthReq) returns (AuthAck);
+  //  rpc Flow(Heartbeat) returns (Heartbeat);
 }
 
 message Header {

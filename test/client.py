@@ -34,14 +34,8 @@ def run():
     with grpc.insecure_channel('localhost:50051',
                                options=[('grpc.keepalive_time_ms', 60000)]) as channel:
         stub = session_pb2_grpc.SessionStub(channel)
-        response = stub.Auth(session_pb2.AuthReq(cookie='you'))
-        print("client received: ", session_pb2.ErrorCode.Name(response.code))
-        print(stub.Ping(session_pb2.Heartbeat(timestamp=time.time_ns())))
         for response in stub.Flow(generate_messages()):
             print(response)
-        print(stub.Ping(session_pb2.Heartbeat(timestamp=time.time_ns())))
-        time.sleep(60)
-
 
 if __name__ == '__main__':
     logging.basicConfig()

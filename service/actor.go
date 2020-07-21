@@ -1,4 +1,4 @@
-package god
+package service
 
 import (
 	sc "github.com/enjoypi/gostatechart"

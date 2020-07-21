@@ -7,32 +7,34 @@ import (
 	"time"
 
 	"github.com/enjoypi/god/pb"
+	"github.com/enjoypi/god/service"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 )
 
 type Node struct {
-	pb.UnimplementedNodeServer
+	pb.UnimplementedSessionServer
+	*Config
 	*zap.Logger
 }
 
-func NewNode() *Node {
-	return &Node{}
+func NewNode(cfg *Config, logger *zap.Logger) (*Node, error) {
+	if cfg.Node.ID <= 0 {
+		return nil, ErrInvalidNodeID
+	}
+	return &Node{Config: cfg, Logger: logger}, nil
 }
 
-func (n *Node) Start(cfg *Config, logger *zap.Logger) error {
-	if cfg.Node.ID <= 0 {
-		return ErrInvalidNodeID
-	}
-	lis, err := net.Listen("tcp", cfg.ListenAddress)
+func (n *Node) Serve(srv *service.Service, listenAddress string) error {
+	lis, err := net.Listen("tcp", listenAddress)
 	if err != nil {
 		return err
 	}
 
 	s := grpc.NewServer()
-	pb.RegisterNodeServer(s, &Node{Logger: logger})
+	pb.RegisterSessionServer(s, n)
 
-	logger.Info(lis.Addr().String())
+	n.Info(lis.Addr().String())
 	return s.Serve(lis)
 }
 
@@ -45,7 +47,7 @@ func (n *Node) Ping(ctx context.Context, in *pb.Heartbeat) (*pb.Heartbeat, error
 	return in, nil
 }
 
-func (n *Node) Flow(stream pb.Node_FlowServer) error {
+func (n *Node) Flow(stream pb.Session_FlowServer) error {
 	var err error
 	var header pb.Header
 

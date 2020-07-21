@@ -7,9 +7,8 @@ import (
 const defaultTimeout = 60 * time.Second
 
 type Config struct {
-	ListenAddress string
-	NodePath      string
-	EtcdTTL       int64
+	NodePath string
+	EtcdTTL  int64
 
 	//Etcd     etcdclient.Config
 	Node NodeConfig

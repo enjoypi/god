@@ -37,7 +37,7 @@ fmt: $(GO_FILES) $(PROTO_FILES)
 
 # Delete all files that are normally created by running make.
 clean:
-	rm -f $(PB_GO_FILES) $(TEST_PATH)/*_pb2*.py
+	rm -f $(PB_GO_PATH)/*.pb.go $(TEST_PATH)/*_pb2*.py
 
 # Like ‘clean’, but may refrain from deleting a few files that people normally don’t want to recompile. For example, the ‘mostlyclean’ target for GCC does not delete libgcc.a, because recompiling it is rarely necessary and takes a lot of time.
 mostlyclean:

@@ -2,11 +2,11 @@ syntax = "proto3";
 option go_package = ".;pb";
 package pb;
 
-service Node {
+service Session {
+  rpc Flow(stream Header) returns (stream Header);
+
   rpc Auth(AuthReq) returns (AuthAck);
   rpc Ping(Heartbeat) returns (Heartbeat);
-
-  rpc Flow(stream Header) returns (stream Header);
 }
 
 message Header {

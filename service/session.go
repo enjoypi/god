@@ -1,8 +1,7 @@
-package mesh
+package service
 
 import (
 	"github.com/enjoypi/god/pb"
-	"go.uber.org/zap"
 )
 
 type Session struct {
@@ -10,6 +9,6 @@ type Session struct {
 }
 
 func NewSession(server pb.Session_FlowServer) *Session {
-
+	return nil
 }
 

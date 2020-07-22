@@ -1,6 +1,7 @@
-package service
+package net
 
 import (
+	"github.com/enjoypi/god"
 	"github.com/enjoypi/god/pb"
 	sc "github.com/enjoypi/gostatechart"
 	"go.uber.org/zap"
@@ -10,18 +11,26 @@ import (
 )
 
 type NetService struct {
-	*Service
+	Config
+	*zap.Logger
+	*god.Service
 	pb.UnimplementedSessionServer
+
+	childState sc.State
 }
 
-func NewNetService(srvType ServiceType, initialState sc.State, initialEvent sc.Event, logger *zap.Logger) *NetService {
-	return &NetService{
-		Service: NewService(srvType, initialState, initialEvent, logger),
+func NewService(cfg Config, logger *zap.Logger, initialState sc.State, childState sc.State) *god.Service {
+	svc := &NetService{
+		Config:     cfg,
+		Logger:     logger,
+		childState: childState,
 	}
+	svc.Service = god.NewService(initialState, svc)
+	return svc.Service
 }
 
-func (n *NetService) Serve(listenAddress string) error {
-	lis, err := net.Listen("tcp", listenAddress)
+func (n *NetService) Serve() error {
+	lis, err := net.Listen("tcp", n.Config.Net.ListenAddress)
 	if err != nil {
 		return err
 	}
@@ -37,7 +46,11 @@ func (n *NetService) Serve(listenAddress string) error {
 func (n *NetService) Flow(stream pb.Session_FlowServer) error {
 	var err error
 
-	//actor := n.newActor()
+	actor, err := n.Service.NewActor(n.childState, 0)
+	if err != nil {
+		return err
+	}
+
 	for {
 		var header pb.Header
 		if err = stream.RecvMsg(&header); err != nil {
@@ -57,7 +70,7 @@ func (n *NetService) Flow(stream pb.Session_FlowServer) error {
 		}
 		n.Info(req.String(), zap.String("type", reflect.TypeOf(req).String()))
 		n.PostEvent(&header)
-		//actor.PostEvent(actor)
+		actor.PostEvent(&header)
 
 		//header.Serial++
 		//if err = stream.SendMsg(&header); err != nil {

@@ -1,34 +1,47 @@
 package god
 
 import (
-	"github.com/enjoypi/god/service"
-	sc "github.com/enjoypi/gostatechart"
+	"sync"
+
 	"go.uber.org/zap"
 )
 
 type Node struct {
-	*Config
 	*zap.Logger
 
-	services map[service.ServiceType]*service.NetService
+	services map[ServiceType]*Service
 }
 
 func NewNode(cfg *Config, logger *zap.Logger) (*Node, error) {
 	if cfg.Node.ID <= 0 {
 		return nil, ErrInvalidNodeID
 	}
-	return &Node{Config: cfg,
+	return &Node{
 		Logger:   logger,
-		services: make(map[uint16]*service.NetService),
+		services: make(map[ServiceType]*Service),
 	}, nil
 }
 
-func (n *Node) NewService(srvType service.ServiceType, state sc.State) (*service.NetService, error) {
+func (n *Node) AddService(srvType ServiceType, srv *Service) error {
 	_, ok := n.services[srvType]
 	if ok {
-		return nil, ErrDuplicateService
+		return ErrDuplicateService
 	}
-	srv := service.NewNetService(srvType, state, nil, n.Logger)
+
 	n.services[srvType] = srv
-	return srv, nil
+	return nil
+}
+
+func (n *Node) Serve() error {
+	var wg sync.WaitGroup
+	for _, svc := range n.services {
+		wg.Add(1)
+		go func(svc *Service) {
+			svc.Run()
+			wg.Done()
+		}(svc)
+	}
+	wg.Wait()
+
+	return nil
 }

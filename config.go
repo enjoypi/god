@@ -5,7 +5,6 @@ type Config struct {
 }
 
 type NodeConfig struct {
-	Type    string
-	ID      uint16
-	Address string
+	Type string
+	ID   uint16
 }

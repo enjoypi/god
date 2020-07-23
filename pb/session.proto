@@ -7,22 +7,23 @@ service Session {
 
   //  rpc Flow(AuthReq) returns (AuthAck);
   //  rpc Flow(Heartbeat) returns (Heartbeat);
+  //  rpc Flow(Echo) returns (Echo);
 }
 
 message Header {
   uint32 serial = 1;
-  uint32 messageType = 2;
+  string messageType = 2;
   uint32 srcNode = 3;
   uint32 srcActor = 4;
 }
-
-message Test { uint32 serial = 1; }
 
 enum ErrorCode { OK = 0; }
 
 message AuthReq { string cookie = 1; }
 
 message AuthAck { ErrorCode code = 1; }
+
+message Echo { string content = 1; }
 
 message Heartbeat {
   int64 timestamp = 1;

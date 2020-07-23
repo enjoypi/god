@@ -2,6 +2,7 @@ package god
 
 import (
 	"math/rand"
+	"sync"
 
 	sc "github.com/enjoypi/gostatechart"
 	"go.uber.org/zap"
@@ -11,41 +12,60 @@ import (
 // 1 supervisor : 0-N actor
 
 type ServiceType = uint16
-type Actor = sc.StateMachine
-type ActorID = uint16
+type ActorID = uint64
+
+type Actor struct {
+	ID ActorID
+	*sc.StateMachine
+}
 
 type Service struct {
 	*Actor
 	*zap.Logger
 	ServiceType
 
-	children map[ActorID]*Actor
+	children sync.Map
 	context  interface{}
 }
 
-func NewService(initialState sc.State, context interface{}) *Service {
-	return &Service{
-		Actor:    sc.NewStateMachine(initialState, context),
-		children: make(map[ActorID]*Actor),
+func NewService(logger *zap.Logger, initialState sc.State, context interface{}) *Service {
+	svc := &Service{
+		Actor: &Actor{
+			ID:           0,
+			StateMachine: sc.NewStateMachine(initialState, context),
+		},
+		Logger: logger,
 	}
+
+	if err := svc.Initiate(nil); err != nil {
+		return nil
+	}
+	return svc
 }
 
-func (srv *Service) NewActor(initialState sc.State, id ActorID) (*Actor, error) {
-	actorID := id
-	if actorID == 0 {
-		actorID = ActorID(rand.Uint32())
+func (svc *Service) NewActor(id ActorID, initialState sc.State, context interface{}) (*Actor, error) {
+	if id == 0 {
+		id = rand.Uint64()
 	}
 
-	_, ok := srv.children[actorID]
+	_, ok := svc.children.Load(id)
 	if ok {
 		return nil, ErrDuplicateActor
 	}
 
-	actor := sc.NewStateMachine(initialState, srv.context)
-	if err := actor.Initiate(nil); err != nil {
+	machine := sc.NewStateMachine(initialState, context)
+	if err := machine.Initiate(nil); err != nil {
 		return nil, ErrFailedInitialization
 	}
-	srv.children[actorID] = actor
-	go actor.Run()
+
+	actor := &Actor{ID: id, StateMachine: machine}
+	svc.children.Store(id, actor)
+
+	svc.Logger.Info("new actor", zap.Uint64("id", id))
 	return actor, nil
+}
+
+func (svc *Service) DeleteActor(id ActorID) {
+	svc.children.Delete(id)
+	svc.Logger.Info("delete actor", zap.Uint64("id", id))
 }

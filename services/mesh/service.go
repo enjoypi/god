@@ -3,35 +3,41 @@ package mesh
 import (
 	"github.com/enjoypi/god"
 	sc "github.com/enjoypi/gostatechart"
+	etcdclient "go.etcd.io/etcd/clientv3"
 	"go.uber.org/zap"
 )
 
-type Context struct {
+type Params struct {
 	Config
 	*zap.Logger
 }
 
 func NewService(cfg Config, logger *zap.Logger) *god.Service {
 	return god.NewService(
-		(*Root)(nil),
-		&Context{cfg, logger},
+		logger,
+		(*main)(nil),
+		&Params{cfg, logger},
 	)
 }
 
-type Root struct {
+type main struct {
+	// implement sc.State
 	sc.SimpleState
-	*Context
+
+	*etcdclient.Client
+	*Params
 }
 
-func (s Root) Begin(ctx interface{}, event sc.Event) sc.Event {
-	s.Context = ctx.(*Context)
-	return initEtcd(s.Config, s.Logger)
+func (m *main) Begin(ctx interface{}, event sc.Event) sc.Event {
+	m.Params = ctx.(*Params)
+	if c, err := dialEtcd(m.Config, m.Logger); err != nil {
+		return err
+	} else {
+		m.Client = c
+	}
+	return nil
 }
 
-func (s Root) End(event sc.Event) sc.Event {
-	panic("implement me")
-}
-
-func (s Root) GetTransitions() sc.Transitions {
+func (s *main) GetTransitions() sc.Transitions {
 	return nil
 }

@@ -12,9 +12,9 @@ type Config struct {
 }
 
 type MeshConfig struct {
-	GrantTTL	 int64
 	DefaultTimeout time.Duration
-	Path	string
+	GrantTTL       int64
+	Path           string
 }
 
 //const defaultTimeout = 5 * time.Second

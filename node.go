@@ -22,13 +22,17 @@ func NewNode(cfg *Config, logger *zap.Logger) (*Node, error) {
 	}, nil
 }
 
-func (n *Node) AddService(srvType ServiceType, srv *Service) error {
-	_, ok := n.services[srvType]
+func (n *Node) AddService(svcType ServiceType, svc *Service) error {
+	if svc == nil {
+		return ErrFailedInitialization
+	}
+
+	_, ok := n.services[svcType]
 	if ok {
 		return ErrDuplicateService
 	}
 
-	n.services[srvType] = srv
+	n.services[svcType] = svc
 	return nil
 }
 
@@ -37,8 +41,8 @@ func (n *Node) Serve() error {
 	for _, svc := range n.services {
 		wg.Add(1)
 		go func(svc *Service) {
+			defer wg.Done()
 			svc.Run()
-			wg.Done()
 		}(svc)
 	}
 	wg.Wait()

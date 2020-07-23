@@ -1,85 +1,57 @@
 package net
 
 import (
+	"net"
+
 	"github.com/enjoypi/god"
 	"github.com/enjoypi/god/pb"
 	sc "github.com/enjoypi/gostatechart"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
-	"net"
-	"reflect"
 )
 
-type NetService struct {
+type Service struct {
 	Config
 	*zap.Logger
-	*god.Service
 	pb.UnimplementedSessionServer
 
 	childState sc.State
+	godSvc     *god.Service
 }
 
 func NewService(cfg Config, logger *zap.Logger, initialState sc.State, childState sc.State) *god.Service {
-	svc := &NetService{
+	svc := &Service{
 		Config:     cfg,
 		Logger:     logger,
 		childState: childState,
 	}
-	svc.Service = god.NewService(initialState, svc)
-	return svc.Service
+	svc.godSvc = god.NewService(logger, initialState, svc)
+	go func() {
+		_ = svc.Serve()
+	}()
+	return svc.godSvc
 }
 
-func (n *NetService) Serve() error {
-	lis, err := net.Listen("tcp", n.Config.Net.ListenAddress)
+func (svc *Service) Serve() error {
+	lis, err := net.Listen("tcp", svc.Config.Net.ListenAddress)
 	if err != nil {
 		return err
 	}
 
 	s := grpc.NewServer()
-	pb.RegisterSessionServer(s, n)
+	pb.RegisterSessionServer(s, svc)
 
-	n.Info(lis.Addr().String())
-	go n.Run()
+	svc.Info(lis.Addr().String())
 	return s.Serve(lis)
 }
 
-func (n *NetService) Flow(stream pb.Session_FlowServer) error {
-	var err error
-
-	actor, err := n.Service.NewActor(n.childState, 0)
+func (svc *Service) Flow(stream pb.Session_FlowServer) error {
+	actor, err := svc.godSvc.NewActor(0, svc.childState, &Session{Logger: svc.Logger, Session_FlowServer: stream})
 	if err != nil {
 		return err
 	}
 
-	for {
-		var header pb.Header
-		if err = stream.RecvMsg(&header); err != nil {
-			break
-		}
-
-		//typ, ok := p.id2type[header.MessageType]
-		//if !ok {
-		//	return 0, nil, ErrMessageNotRegistered
-		//}
-		//// 根据类型创建一个对应的实例
-		//msg0 := reflect.New(typ.Elem()).Interface().(proto.Message)
-
-		var req pb.Heartbeat
-		if err = stream.RecvMsg(&req); err != nil {
-			break
-		}
-		n.Info(req.String(), zap.String("type", reflect.TypeOf(req).String()))
-		n.PostEvent(&header)
-		actor.PostEvent(&header)
-
-		//header.Serial++
-		//if err = stream.SendMsg(&header); err != nil {
-		//	break
-		//}
-		//
-		//if err := stream.SendMsg(&req); err != nil {
-		//	break
-		//}
-	}
-	return err
+	actor.Run()
+	svc.godSvc.DeleteActor(actor.ID)
+	return nil
 }

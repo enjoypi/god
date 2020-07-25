@@ -1,0 +1,17 @@
+syntax = "proto3";
+option go_package = ".;pb";
+package pb;
+
+enum ServiceType {
+  None = 0;
+  Mesh = 1;
+  Receiver = 2;
+  Platform = 3;
+  Agent = 101;
+}
+
+// RegisterService
+message ServiceInfo {
+  uint32 nodeID = 1;
+  ServiceType serviceType = 2;
+}

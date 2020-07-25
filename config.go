@@ -6,5 +6,5 @@ type Config struct {
 
 type NodeConfig struct {
 	Type string
-	ID   uint16
+	ID   uint32
 }

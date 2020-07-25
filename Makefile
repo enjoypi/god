@@ -5,7 +5,7 @@
 .PHONY: all protocol fmt clean mostlyclean distclean realclean clobber install print tar shar dist TAGS check test
 
 # Make all the top-level targets the makefile knows about.
-GO_FILES=$(wildcard *.go)
+
 
 all: protocol fmt
 
@@ -31,7 +31,8 @@ $(TEST_PATH)/%_pb2.py: $(PROTO_PATH)/%.proto
 	@python -m grpc_tools.protoc -I$(PROTO_PATH)/ --python_out=$(TEST_PATH)/ --grpc_python_out=$(TEST_PATH)/ $(patsubst $(TEST_PATH)/%_pb2.py,$(PROTO_PATH)/%.proto,$@)
 
 # Format all sources
-fmt: $(GO_FILES) $(PROTO_FILES)
+fmt: GO_FILES=$(wildcard *.go) $(wildcard */*.go) $(wildcard */*/*.go)
+fmt:
 	goimports -w $(GO_FILES)
 	clang-format -i $(PROTO_FILES)
 
@@ -54,7 +55,6 @@ install:
 # Print listings of the source files that have changed.
 print:
 	@echo $(PROTO_FILES)
-	@echo $(GO_FILES)
 	@echo $(PB_GO_FILES)
 	@echo $(PB_PY_FILES)
 

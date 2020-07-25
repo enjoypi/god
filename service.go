@@ -4,6 +4,8 @@ import (
 	"math/rand"
 	"sync"
 
+	"github.com/enjoypi/god/pb"
+
 	sc "github.com/enjoypi/gostatechart"
 	"go.uber.org/zap"
 )
@@ -11,7 +13,6 @@ import (
 // service = supervisor
 // 1 supervisor : 0-N actor
 
-type ServiceType = uint16
 type ActorID = uint64
 
 type Actor struct {
@@ -22,7 +23,7 @@ type Actor struct {
 type Service struct {
 	*Actor
 	*zap.Logger
-	ServiceType
+	pb.ServiceType
 
 	children sync.Map
 	context  interface{}

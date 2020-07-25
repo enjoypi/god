@@ -3,6 +3,8 @@ package god
 import (
 	"sync"
 
+	"github.com/enjoypi/god/pb"
+
 	"go.uber.org/zap"
 )
 
@@ -11,11 +13,12 @@ type GoRun func(ExitChan, interface{}) (interface{}, error)
 type OnGoReturn func(interface{}, error)
 
 type Node struct {
+	ID uint32
 	*zap.Logger
 
 	ExitChan
 
-	services map[ServiceType]*Service
+	services map[pb.ServiceType]*Service
 	wg       sync.WaitGroup
 }
 
@@ -24,13 +27,14 @@ func NewNode(cfg *Config, logger *zap.Logger) (*Node, error) {
 		return nil, ErrInvalidNodeID
 	}
 	return &Node{
+		ID:       cfg.Node.ID,
 		Logger:   logger,
 		ExitChan: make(ExitChan),
-		services: make(map[ServiceType]*Service),
+		services: make(map[pb.ServiceType]*Service),
 	}, nil
 }
 
-func (n *Node) AddService(svcType ServiceType, svc *Service) error {
+func (n *Node) AddService(svcType pb.ServiceType, svc *Service) error {
 	if svc == nil {
 		return ErrFailedInitialization
 	}
@@ -41,6 +45,15 @@ func (n *Node) AddService(svcType ServiceType, svc *Service) error {
 	}
 
 	n.services[svcType] = svc
+	return nil
+}
+
+func (n *Node) Cast2Service(svcType pb.ServiceType, msg interface{}) error {
+	mesh, ok := n.services[svcType]
+	if !ok {
+		return ErrNoService
+	}
+	mesh.PostEvent(msg)
 	return nil
 }
 
@@ -55,11 +68,28 @@ func (n *Node) Go(run GoRun, parameter interface{}, onRet OnGoReturn) {
 	}()
 }
 
+func (n *Node) RegisterService(svcType pb.ServiceType) error {
+	return n.Cast2Service(pb.ServiceType_Mesh,
+		&pb.ServiceInfo{
+			NodeID:      n.ID,
+			ServiceType: svcType,
+		})
+}
+
 func (n *Node) Serve() error {
-	for _, svc := range n.services {
+	for svcType, svc := range n.services {
+		if svcType != pb.ServiceType_Mesh {
+
+			if err := n.RegisterService(svcType); err != nil {
+				n.Error("register service failed", zap.Error(err))
+				continue
+				//return nil, err
+			}
+		}
 		n.Go(func(exitChan ExitChan, parameter interface{}) (interface{}, error) {
 			svc := parameter.(*Service)
 			svc.Run(exitChan)
+
 			return nil, nil
 		}, svc, nil)
 	}

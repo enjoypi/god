@@ -2,6 +2,7 @@ package mesh
 
 import (
 	"github.com/enjoypi/god"
+	"github.com/enjoypi/god/pb"
 	sc "github.com/enjoypi/gostatechart"
 	etcdclient "go.etcd.io/etcd/clientv3"
 	"go.uber.org/zap"
@@ -32,6 +33,8 @@ type main struct {
 
 func (m *main) Begin(ctx interface{}, event sc.Event) sc.Event {
 	m.Params = ctx.(*Params)
+	m.RegisterReaction((*pb.ServiceInfo)(nil), m.onServiceInfo)
+
 	return m.connectEtcd()
 }
 
@@ -57,6 +60,10 @@ func (m *main) connectEtcd() error {
 		m.Node.Go(m.keepAlive, leaseID, m.onDropped)
 	}
 	return err
+}
+
+func (m *main) getDeps() {
+
 }
 
 func (m *main) onDropped(i interface{}, err error) {
@@ -91,6 +98,7 @@ func (m *main) onEvents(events []*etcdclient.Event) {
 
 func (m *main) keepAlive(exitChan god.ExitChan, i interface{}) (interface{}, error) {
 	leaseID := i.(etcdclient.LeaseID)
+
 	keepChan, err := m.Client.KeepAlive(context.Background(), leaseID)
 	if err != nil {
 		return nil, err

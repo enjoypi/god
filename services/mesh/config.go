@@ -3,20 +3,25 @@ package mesh
 import (
 	"time"
 
-	"google.golang.org/grpc"
+	"github.com/enjoypi/god/services/net"
+
 	etcdclient "go.etcd.io/etcd/clientv3"
+	"google.golang.org/grpc"
 )
 
 type Config struct {
-	Etcd etcdclient.Config
 	Mesh MeshConfig
+	Etcd etcdclient.Config
 }
 
 type MeshConfig struct {
-	DefaultTimeout time.Duration // 未设置Timeout时默认超时
-	RetryTimes     int           // 未设置Timeout时默认超时
-	GrantTTL       int64
-	Path           string
+	Net net.Config
+
+	AdvertiseAddress string
+	DefaultTimeout   time.Duration // 未设置Timeout时默认超时
+	GrantTTL         int64
+	Path             string
+	RetryTimes       int // 尝试连接次数
 }
 
 func normalizeConfig(config Config) Config {

@@ -43,7 +43,7 @@ func NewService(logger *zap.Logger, initialState sc.State, context interface{}) 
 	return svc
 }
 
-func (svc *Service) NewActor(id ActorID, initialState sc.State, context interface{}) (*Actor, error) {
+func (svc *Service) NewAgent(id ActorID, initialState sc.State, context interface{}) (*Actor, error) {
 	if id == 0 {
 		id = rand.Uint64()
 	}
@@ -61,11 +61,11 @@ func (svc *Service) NewActor(id ActorID, initialState sc.State, context interfac
 	actor := &Actor{ID: id, StateMachine: machine}
 	svc.children.Store(id, actor)
 
-	svc.Logger.Info("new actor", zap.Uint64("id", id))
+	svc.Logger.Info("new agent", zap.Uint64("id", id))
 	return actor, nil
 }
 
-func (svc *Service) DeleteActor(id ActorID) {
+func (svc *Service) RemoveAgent(id ActorID) {
 	svc.children.Delete(id)
-	svc.Logger.Info("delete actor", zap.Uint64("id", id))
+	svc.Logger.Info("remove agent", zap.Uint64("id", id))
 }

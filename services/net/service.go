@@ -13,22 +13,25 @@ import (
 type Service struct {
 	Config
 	*zap.Logger
+	*god.Node
 	pb.UnimplementedSessionServer
 
 	childState sc.State
 	godSvc     *god.Service
 }
 
-func NewService(cfg Config, logger *zap.Logger, initialState sc.State, childState sc.State) *god.Service {
+func NewService(cfg Config, logger *zap.Logger, node *god.Node, initialState sc.State, childState sc.State) *god.Service {
 	svc := &Service{
 		Config:     cfg,
 		Logger:     logger,
+		Node:       node,
 		childState: childState,
 	}
 	svc.godSvc = god.NewService(logger, initialState, svc)
-	go func() {
-		_ = svc.Serve()
-	}()
+	node.Go(func(god.ExitChan, interface{}) (interface{}, error) {
+		err := svc.Serve()
+		return nil, err
+	}, nil, nil)
 	return svc.godSvc
 }
 
@@ -46,12 +49,12 @@ func (svc *Service) Serve() error {
 }
 
 func (svc *Service) Flow(stream pb.Session_FlowServer) error {
-	actor, err := svc.godSvc.NewActor(0, svc.childState, &Session{Logger: svc.Logger, Session_FlowServer: stream})
+	actor, err := svc.godSvc.NewAgent(0, svc.childState, &Session{Logger: svc.Logger, Session_FlowServer: stream})
 	if err != nil {
 		return err
 	}
 
-	actor.Run()
-	svc.godSvc.DeleteActor(actor.ID)
+	actor.Run(svc.Node.ExitChan)
+	svc.godSvc.RemoveAgent(actor.ID)
 	return nil
 }

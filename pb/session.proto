@@ -1,3 +1,11 @@
+// License header (if applicable)
+// File overview
+// Syntax
+// Package
+// Imports (sorted)
+// File options
+// Everything else
+
 syntax = "proto3";
 option go_package = ".;pb";
 package pb;

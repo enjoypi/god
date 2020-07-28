@@ -3,10 +3,9 @@ option go_package = ".;pb";
 package pb;
 
 enum ServiceType {
-  None = 0;
+  STNone = 0;
   Mesh = 1;
-  Receiver = 2;
-  Platform = 3;
+  Platform = 2;
   Agent = 101;
 }
 
@@ -14,4 +13,10 @@ enum ServiceType {
 message ServiceInfo {
   uint32 nodeID = 1;
   ServiceType serviceType = 2;
+}
+
+enum TransportType {
+  TTNone = 0;
+  MessageBus = 1;
+  RPC = 2;
 }

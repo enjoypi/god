@@ -5,7 +5,6 @@ import (
 	"sync"
 
 	"github.com/enjoypi/god/pb"
-
 	sc "github.com/enjoypi/gostatechart"
 	"go.uber.org/zap"
 )
@@ -25,17 +24,18 @@ type Service struct {
 	*zap.Logger
 	pb.ServiceType
 
-	children sync.Map
-	context  interface{}
+	children    sync.Map
+	realService interface{}
 }
 
-func NewService(logger *zap.Logger, initialState sc.State, context interface{}) *Service {
+func NewService(logger *zap.Logger, realService interface{}, initialState sc.State, stateCtx interface{}) *Service {
 	svc := &Service{
 		Actor: &Actor{
 			ID:           0,
-			StateMachine: sc.NewStateMachine(initialState, context),
+			StateMachine: sc.NewStateMachine(initialState, stateCtx),
 		},
-		Logger: logger,
+		Logger:      logger,
+		realService: realService,
 	}
 
 	if err := svc.Initiate(nil); err != nil {
@@ -44,7 +44,7 @@ func NewService(logger *zap.Logger, initialState sc.State, context interface{}) 
 	return svc
 }
 
-func (svc *Service) NewAgent(id ActorID, initialState sc.State, context interface{}) (*Actor, error) {
+func (svc *Service) NewAgent(id ActorID, initialState sc.State, stateCtx interface{}) (*Actor, error) {
 	if id == 0 {
 		id = rand.Uint64()
 	}
@@ -54,7 +54,7 @@ func (svc *Service) NewAgent(id ActorID, initialState sc.State, context interfac
 		return nil, ErrDuplicateActor
 	}
 
-	machine := sc.NewStateMachine(initialState, context)
+	machine := sc.NewStateMachine(initialState, stateCtx)
 	if err := machine.Initiate(nil); err != nil {
 		return nil, ErrFailedInitialization
 	}

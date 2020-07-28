@@ -4,6 +4,7 @@ import (
 	"net"
 
 	"github.com/enjoypi/god"
+	"github.com/enjoypi/god/actors"
 	"github.com/enjoypi/god/pb"
 	sc "github.com/enjoypi/gostatechart"
 	"go.uber.org/zap"
@@ -27,8 +28,8 @@ func NewService(cfg Config, logger *zap.Logger, node *god.Node, initialState sc.
 		Node:       node,
 		childState: childState,
 	}
-	svc.godSvc = god.NewService(logger, initialState, svc)
-	node.Go(func(god.ExitChan, interface{}) (interface{}, error) {
+	svc.godSvc = god.NewService(logger, svc, initialState, svc)
+	actors.Go(func(actors.ExitChan, interface{}) (interface{}, error) {
 		err := svc.Serve()
 		return nil, err
 	}, nil, nil)
@@ -54,7 +55,7 @@ func (svc *Service) Flow(stream pb.Session_FlowServer) error {
 		return err
 	}
 
-	actor.Run(svc.Node.ExitChan)
+	actor.Run(actors.DefaultActors.ExitChan)
 	svc.godSvc.RemoveAgent(actor.ID)
 	return nil
 }

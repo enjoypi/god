@@ -5,10 +5,9 @@ import (
 	"fmt"
 	"time"
 
-	etcdclient "go.etcd.io/etcd/clientv3"
-
 	"github.com/enjoypi/god/pb"
 	sc "github.com/enjoypi/gostatechart"
+	etcdclient "go.etcd.io/etcd/clientv3"
 )
 
 func (m *main) onServiceInfo(event sc.Event) sc.Event {

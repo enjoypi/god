@@ -2,6 +2,7 @@ package mesh
 
 import (
 	"github.com/enjoypi/god"
+	"github.com/enjoypi/god/actors"
 	"github.com/enjoypi/god/pb"
 	sc "github.com/enjoypi/gostatechart"
 	etcdclient "go.etcd.io/etcd/clientv3"
@@ -9,17 +10,19 @@ import (
 	"golang.org/x/net/context"
 )
 
-type Params struct {
+type Service struct {
 	Config
 	*zap.Logger
-	*god.Node
 }
 
-func NewService(cfg Config, logger *zap.Logger, node *god.Node) *god.Service {
+func NewService(cfg Config, logger *zap.Logger, tt pb.TransportType) *god.Service {
+	svc := &Service{Config: normalizeConfig(cfg), Logger: logger}
+
 	return god.NewService(
 		logger,
+		svc,
 		(*main)(nil),
-		&Params{Config: normalizeConfig(cfg), Logger: logger, Node: node},
+		svc,
 	)
 }
 
@@ -28,11 +31,11 @@ type main struct {
 	sc.SimpleState
 
 	*etcdclient.Client
-	*Params
+	*Service
 }
 
 func (m *main) Begin(ctx interface{}, event sc.Event) sc.Event {
-	m.Params = ctx.(*Params)
+	m.Service = ctx.(*Service)
 	m.RegisterReaction((*pb.ServiceInfo)(nil), m.onServiceInfo)
 
 	return m.connectEtcd()
@@ -57,7 +60,7 @@ func (m *main) connectEtcd() error {
 	}
 
 	if err == nil {
-		m.Node.Go(m.keepAlive, leaseID, m.onDropped)
+		actors.Go(m.keepAlive, leaseID, m.onDropped)
 	}
 	return err
 }
@@ -96,7 +99,7 @@ func (m *main) onEvents(events []*etcdclient.Event) {
 	}
 }
 
-func (m *main) keepAlive(exitChan god.ExitChan, i interface{}) (interface{}, error) {
+func (m *main) keepAlive(exitChan actors.ExitChan, i interface{}) (interface{}, error) {
 	leaseID := i.(etcdclient.LeaseID)
 
 	keepChan, err := m.Client.KeepAlive(context.Background(), leaseID)

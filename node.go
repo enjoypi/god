@@ -1,25 +1,19 @@
 package god
 
 import (
-	"sync"
-
+	"github.com/enjoypi/god/actors"
 	"github.com/enjoypi/god/pb"
-
+	mb "github.com/enjoypi/god/transports/message_bus"
+	"github.com/nats-io/nats.go"
 	"go.uber.org/zap"
 )
-
-type ExitChan chan int
-type GoRun func(ExitChan, interface{}) (interface{}, error)
-type OnGoReturn func(interface{}, error)
 
 type Node struct {
 	ID uint32
 	*zap.Logger
 
-	ExitChan
-
 	services map[pb.ServiceType]*Service
-	wg       sync.WaitGroup
+	trans    *mb.Transport
 }
 
 func NewNode(cfg *Config, logger *zap.Logger) (*Node, error) {
@@ -29,9 +23,13 @@ func NewNode(cfg *Config, logger *zap.Logger) (*Node, error) {
 	return &Node{
 		ID:       cfg.Node.ID,
 		Logger:   logger,
-		ExitChan: make(ExitChan),
 		services: make(map[pb.ServiceType]*Service),
 	}, nil
+}
+
+func (n *Node) AddTransport(svcType pb.TransportType, trans *mb.Transport) error {
+	n.trans = trans
+	return nil
 }
 
 func (n *Node) AddService(svcType pb.ServiceType, svc *Service) error {
@@ -48,7 +46,7 @@ func (n *Node) AddService(svcType pb.ServiceType, svc *Service) error {
 	return nil
 }
 
-func (n *Node) Cast2Service(svcType pb.ServiceType, msg interface{}) error {
+func (n *Node) CastTo(svcType pb.ServiceType, msg interface{}) error {
 	mesh, ok := n.services[svcType]
 	if !ok {
 		return ErrNoService
@@ -57,19 +55,16 @@ func (n *Node) Cast2Service(svcType pb.ServiceType, msg interface{}) error {
 	return nil
 }
 
-func (n *Node) Go(run GoRun, parameter interface{}, onRet OnGoReturn) {
-	n.wg.Add(1)
-	go func() {
-		defer n.wg.Done()
-		ret, err := run(n.ExitChan, parameter)
-		if onRet != nil {
-			onRet(ret, err)
-		}
-	}()
+func (n *Node) RealService(svcType pb.ServiceType) interface{} {
+	svc, ok := n.services[svcType]
+	if !ok {
+		return nil
+	}
+	return svc.realService
 }
 
 func (n *Node) RegisterService(svcType pb.ServiceType) error {
-	return n.Cast2Service(pb.ServiceType_Mesh,
+	return n.CastTo(pb.ServiceType_Mesh,
 		&pb.ServiceInfo{
 			NodeID:      n.ID,
 			ServiceType: svcType,
@@ -86,7 +81,7 @@ func (n *Node) Serve() error {
 				//return nil, err
 			}
 		}
-		n.Go(func(exitChan ExitChan, parameter interface{}) (interface{}, error) {
+		actors.Go(func(exitChan actors.ExitChan, parameter interface{}) (interface{}, error) {
 			svc := parameter.(*Service)
 			svc.Run(exitChan)
 
@@ -94,10 +89,14 @@ func (n *Node) Serve() error {
 		}, svc, nil)
 	}
 
-	n.wg.Wait()
+	actors.Wait()
 	return nil
 }
 
+func (n *Node) Subscribe(subj string, cb nats.MsgHandler) (*nats.Subscription, error) {
+	return n.trans.Subscribe(subj, cb)
+}
+
 func (n *Node) Terminate() {
-	close(n.ExitChan)
+	actors.Close()
 }

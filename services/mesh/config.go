@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/enjoypi/god/services/net"
-
 	etcdclient "go.etcd.io/etcd/clientv3"
 	"google.golang.org/grpc"
 )

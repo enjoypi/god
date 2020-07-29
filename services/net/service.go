@@ -50,7 +50,8 @@ func (svc *Service) Serve() error {
 }
 
 func (svc *Service) Flow(stream pb.Session_FlowServer) error {
-	actor, err := svc.godSvc.NewAgent(0, svc.childState, &Session{Logger: svc.Logger, Session_FlowServer: stream})
+	actor, err := svc.godSvc.NewAgent(0, svc.childState,
+		&Session{Logger: svc.Logger, Node: svc.Node, Session_FlowServer: stream})
 	if err != nil {
 		return err
 	}

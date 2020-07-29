@@ -94,7 +94,7 @@ func (n *Node) Serve() error {
 }
 
 func (n *Node) Subscribe(subj string, cb nats.MsgHandler) (*nats.Subscription, error) {
-	return n.trans.Subscribe(subj, cb)
+	return n.trans.Conn.Subscribe(subj, cb)
 }
 
 func (n *Node) Terminate() {

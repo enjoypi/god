@@ -1,22 +1,32 @@
 package mesh
 
 import (
+	"bytes"
+	"encoding/binary"
 	"github.com/enjoypi/god"
 	"github.com/enjoypi/god/actors"
 	"github.com/enjoypi/god/pb"
+	mb "github.com/enjoypi/god/transports/message_bus"
 	sc "github.com/enjoypi/gostatechart"
+	"github.com/nats-io/nats.go"
 	etcdclient "go.etcd.io/etcd/clientv3"
 	"go.uber.org/zap"
 	"golang.org/x/net/context"
+	"io"
 )
 
 type Service struct {
 	Config
 	*zap.Logger
+
+	trans *mb.Transport
 }
 
-func NewService(cfg Config, logger *zap.Logger, tt pb.TransportType) *god.Service {
-	svc := &Service{Config: normalizeConfig(cfg), Logger: logger}
+func NewService(cfg Config, logger *zap.Logger, trans *mb.Transport) *god.Service {
+	svc := &Service{Config: normalizeConfig(cfg),
+		Logger: logger,
+		trans:  trans,
+	}
 
 	return god.NewService(
 		logger,
@@ -26,17 +36,61 @@ func NewService(cfg Config, logger *zap.Logger, tt pb.TransportType) *god.Servic
 	)
 }
 
+func (s *Service) Subscribe(subj string, cb nats.MsgHandler) (*nats.Subscription, error) {
+	return s.trans.Conn.Subscribe(subj, cb)
+}
+
 type main struct {
 	// implement sc.State
 	sc.SimpleState
 
 	*etcdclient.Client
 	*Service
+	buf bytes.Buffer
+}
+
+type Marshal func() (dAtA []byte, err error)
+func (m *main) writeProto(marshal Marshal, size int, w io.Writer) error  {
+	b, err := marshal()
+	if err != nil {
+		return err
+	}
+	m.Logger.Debug("size compare", zap.Int("size", size), zap.Int("trueSize", len(b)))
+
+	l := uint16(len(b))
+	if err := binary.Write(w, binary.LittleEndian, l); err != nil {
+		return err
+	}
+
+	if err := binary.Write(w, binary.LittleEndian, b); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (m *main) Begin(ctx interface{}, event sc.Event) sc.Event {
 	m.Service = ctx.(*Service)
-	m.RegisterReaction((*pb.ServiceInfo)(nil), m.onServiceInfo)
+	//m.RegisterReaction((*pb.ServiceInfo)(nil), m.onServiceInfo)
+	m.RegisterReaction((*pb.Echo)(nil), func(e sc.Event) sc.Event {
+		buf := &m.buf
+		buf.Reset()
+
+		var header pb.Header
+
+		header.Serial ++
+		header.MessageType = "pb.Echo"
+		if err := m.writeProto(header.Marshal, header.Size(), buf); err != nil{
+			return err
+		}
+
+		req := e.(*pb.Echo)
+		if err := m.writeProto(req.Marshal, req.Size(), buf); err != nil{
+			return err
+		}
+
+		m.Logger.Info("buf len", zap.Int("length", buf.Len()))
+		return m.trans.Publish("echo", buf.Bytes())
+	})
 
 	return m.connectEtcd()
 }

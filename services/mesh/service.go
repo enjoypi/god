@@ -3,6 +3,8 @@ package mesh
 import (
 	"bytes"
 	"encoding/binary"
+	"io"
+
 	"github.com/enjoypi/god"
 	"github.com/enjoypi/god/actors"
 	"github.com/enjoypi/god/pb"
@@ -12,7 +14,6 @@ import (
 	etcdclient "go.etcd.io/etcd/clientv3"
 	"go.uber.org/zap"
 	"golang.org/x/net/context"
-	"io"
 )
 
 type Service struct {
@@ -50,7 +51,8 @@ type main struct {
 }
 
 type Marshal func() (dAtA []byte, err error)
-func (m *main) writeProto(marshal Marshal, size int, w io.Writer) error  {
+
+func (m *main) writeProto(marshal Marshal, size int, w io.Writer) error {
 	b, err := marshal()
 	if err != nil {
 		return err
@@ -77,14 +79,14 @@ func (m *main) Begin(ctx interface{}, event sc.Event) sc.Event {
 
 		var header pb.Header
 
-		header.Serial ++
+		header.Serial++
 		header.MessageType = "pb.Echo"
-		if err := m.writeProto(header.Marshal, header.Size(), buf); err != nil{
+		if err := m.writeProto(header.Marshal, header.Size(), buf); err != nil {
 			return err
 		}
 
 		req := e.(*pb.Echo)
-		if err := m.writeProto(req.Marshal, req.Size(), buf); err != nil{
+		if err := m.writeProto(req.Marshal, req.Size(), buf); err != nil {
 			return err
 		}
 

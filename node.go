@@ -17,7 +17,7 @@ type Node struct {
 }
 
 func NewNode(cfg *Config, logger *zap.Logger) (*Node, error) {
-	if cfg.Node.ID <= 0 {
+	if cfg.Node.ID < 0 {
 		return nil, ErrInvalidNodeID
 	}
 	return &Node{
@@ -74,11 +74,9 @@ func (n *Node) RegisterService(svcType pb.ServiceType) error {
 func (n *Node) Serve() error {
 	for svcType, svc := range n.services {
 		if svcType != pb.ServiceType_Mesh {
-
 			if err := n.RegisterService(svcType); err != nil {
-				n.Error("register service failed", zap.Error(err))
+				//n.Error("register service failed", zap.Error(err))
 				continue
-				//return nil, err
 			}
 		}
 		actors.Go(func(exitChan actors.ExitChan, parameter interface{}) (interface{}, error) {

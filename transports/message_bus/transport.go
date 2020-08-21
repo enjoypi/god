@@ -14,8 +14,6 @@ type Transport struct {
 
 	childState sc.State
 	*nats.Conn
-
-	*test
 }
 
 func NewTransport(cfg Config, logger *zap.Logger, nodeID uint32) *Transport {
@@ -50,18 +48,16 @@ func (trans *Transport) Initialize(name string) error {
 		return err
 	}
 	trans.Conn = nc
-	trans.Info("NATS connected", zap.String("url", nc.ConnectedUrl()))
-
-	trans.test = newTest(trans.Logger)
+	trans.Debug("NATS connected", zap.String("url", nc.ConnectedUrl()))
 	return nil
 }
 
 func (trans *Transport) onDisconnected(nc *nats.Conn, err error) {
-	trans.Logger.Warn("NATS disconnected", zap.Error(err))
+	trans.Logger.Debug("NATS disconnected", zap.Error(err))
 }
 
 func (trans *Transport) onReconnected(nc *nats.Conn) {
-	trans.Logger.Info("NATS reconnected", zap.String("url", nc.ConnectedUrl()))
+	trans.Logger.Debug("NATS reconnected", zap.String("url", nc.ConnectedUrl()))
 	if trans.Conn != nc {
 		trans.Conn = nc
 	}

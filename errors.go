@@ -9,3 +9,9 @@ var (
 	ErrDuplicateActor       = errors.New("the actor is already exists")
 	ErrFailedInitialization = errors.New("failed initialization")
 )
+
+func PanicOnError(err error) {
+	if err != nil {
+		panic(err)
+	}
+}

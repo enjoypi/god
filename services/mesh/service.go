@@ -5,10 +5,11 @@ import (
 	"encoding/binary"
 	"io"
 
+	"github.com/enjoypi/god/core"
+
 	"github.com/enjoypi/god"
-	"github.com/enjoypi/god/actors"
 	"github.com/enjoypi/god/pb"
-	mb "github.com/enjoypi/god/transports/message_bus"
+	mb "github.com/enjoypi/god/transports/t_nats"
 	sc "github.com/enjoypi/gostatechart"
 	"github.com/nats-io/nats.go"
 	etcdclient "go.etcd.io/etcd/clientv3"
@@ -116,7 +117,7 @@ func (m *main) connectEtcd() error {
 	}
 
 	if err == nil {
-		actors.Go(m.keepAlive, leaseID, m.onDropped)
+		core.Go(m.keepAlive, leaseID, m.onDropped)
 	}
 	return err
 }
@@ -155,7 +156,7 @@ func (m *main) onEvents(events []*etcdclient.Event) {
 	}
 }
 
-func (m *main) keepAlive(exitChan actors.ExitChan, i interface{}) (interface{}, error) {
+func (m *main) keepAlive(exitChan core.ExitChan, i interface{}) (interface{}, error) {
 	leaseID := i.(etcdclient.LeaseID)
 
 	keepChan, err := m.Client.KeepAlive(context.Background(), leaseID)

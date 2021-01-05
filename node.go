@@ -1,9 +1,9 @@
 package god
 
 import (
-	"github.com/enjoypi/god/actors"
+	"github.com/enjoypi/god/core"
 	"github.com/enjoypi/god/pb"
-	mb "github.com/enjoypi/god/transports/message_bus"
+	mb "github.com/enjoypi/god/transports/t_nats"
 	"github.com/nats-io/nats.go"
 	"go.uber.org/zap"
 )
@@ -79,7 +79,7 @@ func (n *Node) Serve() error {
 				continue
 			}
 		}
-		actors.Go(func(exitChan actors.ExitChan, parameter interface{}) (interface{}, error) {
+		core.Go(func(exitChan core.ExitChan, parameter interface{}) (interface{}, error) {
 			svc := parameter.(*Service)
 			svc.Run(exitChan)
 
@@ -87,7 +87,7 @@ func (n *Node) Serve() error {
 		}, svc, nil)
 	}
 
-	actors.Wait()
+	core.Wait()
 	return nil
 }
 
@@ -96,5 +96,5 @@ func (n *Node) Subscribe(subj string, cb nats.MsgHandler) (*nats.Subscription, e
 }
 
 func (n *Node) Terminate() {
-	actors.Close()
+	core.Close()
 }

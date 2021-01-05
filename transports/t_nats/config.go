@@ -1,4 +1,4 @@
-package message_bus
+package t_nats
 
 import (
 	"github.com/nats-io/nats.go"

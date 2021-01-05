@@ -1,0 +1,14 @@
+@startuml
+
+package "stdlib" {
+HTTP - [First Component]
+[Another Component]
+}
+
+package "applications" {
+FTP - [Second Component]
+
+[First Component] --> FTP
+}
+
+@enduml

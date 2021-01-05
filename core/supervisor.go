@@ -30,13 +30,17 @@ func (sup *Supervisor) Start(actorType ActorType) bool {
 		return false
 	}
 
-	err := actor.Initialize()
-	if err != nil {
-		logger.Error(err.Error())
-		return false
-	}
+	Go(func(exitChan ExitChan, event Event) (Event, error) {
+		if err := actor.Initialize(); err != nil {
+			return nil, err
+		}
 
-	Go(actor.Impl().Run, nil, func(event Event, err error) {
+		select {
+		case <-exitChan:
+			actor.Terminate()
+			return EvStopped, nil
+		}
+	}, nil, func(event Event, err error) {
 		sup.HandleActor(actor.ID(), event)
 	})
 

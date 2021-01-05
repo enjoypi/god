@@ -25,11 +25,11 @@ func (a *ActorManager) Close() {
 	close(a.ExitChan)
 }
 
-func (a *ActorManager) Go(run GoRun, parameter interface{}, onRet OnGoReturn) {
+func (a *ActorManager) Go(run GoRun, event Event, onRet OnGoReturn) {
 	a.wg.Add(1)
 	go func() {
 		defer a.wg.Done()
-		ret, err := run(a.ExitChan, parameter)
+		ret, err := run(a.ExitChan, event)
 		if onRet != nil {
 			onRet(ret, err)
 		}

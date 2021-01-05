@@ -9,10 +9,9 @@ type Actor interface {
 }
 
 type ActorImpl struct {
-	Actor
-
 	id ActorID
 }
+
 type NewActor func() Actor
 
 func (a *ActorImpl) ID() ActorID {

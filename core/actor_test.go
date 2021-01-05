@@ -8,7 +8,22 @@ import (
 )
 
 type sampleActor struct {
-	Actor
+	ActorImpl
+}
+
+func (s *sampleActor) Handle(event Event) {
+	panic("implement me")
+}
+
+func (s *sampleActor) Impl() *ActorImpl {
+	return &s.ActorImpl
+}
+
+func (s sampleActor) Initialize() error {
+	return nil
+}
+
+func (s sampleActor) Terminate() {
 }
 
 var sampleActorType = rand.Int63()

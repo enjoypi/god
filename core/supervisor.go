@@ -18,31 +18,37 @@ func (sup *Supervisor) Initialize() error {
 	return nil
 }
 
-func (sup *Supervisor) Handle(event Event) {
+func (sup *Supervisor) Handle(message Message) Message {
+	return nil
+}
+
+func (sup *Supervisor) HandleActor(actor ActorID, message Message) {
 
 }
-func (sup *Supervisor) HandleActor(actor ActorID, event Event) {
-
-}
-func (sup *Supervisor) Start(actorType ActorType) bool {
+func (sup *Supervisor) Start(actorType ActorType) Actor {
 	actor := defaultActorFactory.new(actorType)
 	if actor == nil {
-		return false
+		return nil
 	}
 
-	Go(func(exitChan ExitChan, event Event) (Event, error) {
+	Go(func(exitChan ExitChan) (Message, error) {
 		if err := actor.Initialize(); err != nil {
 			return nil, err
 		}
+		defer actor.Terminate()
 
-		select {
-		case <-exitChan:
-			actor.Terminate()
-			return EvStopped, nil
+		mq := actor.MessageQueue()
+		for {
+			select {
+			case msg := <-mq:
+				actor.Handle(msg)
+			case <-exitChan:
+				return EvStopped, nil
+			}
 		}
-	}, nil, func(event Event, err error) {
-		sup.HandleActor(actor.ID(), event)
+	}, func(message Message, err error) {
+		sup.HandleActor(actor.ID(), message)
 	})
 
-	return true
+	return actor
 }

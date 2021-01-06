@@ -2,8 +2,9 @@ package core
 
 import (
 	"math/rand"
-	"reflect"
 	"testing"
+
+	"go.uber.org/zap"
 
 	"github.com/stretchr/testify/require"
 )
@@ -12,8 +13,11 @@ type sampleActor struct {
 	ActorImpl
 }
 
-func (s *sampleActor) Handle(event Event) {
-	logger.Debug(reflect.TypeOf(event).Elem().Name())
+var _ Actor = (*sampleActor)(nil)
+
+func (s *sampleActor) Handle(message Message) Message {
+	logger.Debug("handle", zap.Any("message", message))
+	return nil
 }
 
 func (s *sampleActor) Impl() *ActorImpl {
@@ -32,6 +36,7 @@ func (s *sampleActor) Terminate() {
 var sampleActorType = rand.Int63()
 
 func init() {
+	logger, _ = zap.NewDevelopment()
 	defaultActorFactory.RegisterActorCreator(sampleActorType, newSampleActor)
 }
 
@@ -43,4 +48,6 @@ func TestSampleActor(t *testing.T) {
 	a := defaultActorFactory.new(sampleActorType)
 	require.NotNil(t, a)
 	require.IsType(t, (*sampleActor)(nil), a)
+	a.Post("hello")
+	Wait()
 }

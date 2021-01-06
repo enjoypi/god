@@ -19,7 +19,7 @@ func init() {
 	trans = NewTransport(cfg, logger, 1)
 }
 
-func TestNewTransport(t *testing.T) {
+func NoTestNewTransport(t *testing.T) {
 	sub, err := trans.SubscribeSync("test")
 	require.NoError(t, err)
 	require.NotNil(t, sub)
@@ -29,7 +29,6 @@ func TestNewTransport(t *testing.T) {
 	for msg, err := sub.NextMsg(time.Second); err == nil; msg, err = sub.NextMsg(time.Second) {
 		require.Equal(t, "test", msg.Subject)
 		require.Equal(t, "data", string(msg.Data))
-		t.Log(msg.Reply)
 		require.NoError(t, trans.Publish(msg.Reply, nil))
 	}
 

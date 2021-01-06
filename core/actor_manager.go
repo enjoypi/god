@@ -5,8 +5,8 @@ import (
 )
 
 type ExitChan chan int
-type GoRun func(ExitChan, Event) (Event, error)
-type OnGoReturn func(Event, error)
+type GoRun func(ExitChan) (Message, error)
+type OnReturn func(Message, error)
 
 type ActorManager struct {
 	wg sync.WaitGroup
@@ -18,18 +18,18 @@ var (
 )
 
 func init() {
-	DefaultActorManager.ExitChan = make(ExitChan)
+	DefaultActorManager.ExitChan = make(ExitChan, 1)
 }
 
 func (a *ActorManager) Close() {
 	close(a.ExitChan)
 }
 
-func (a *ActorManager) Go(run GoRun, event Event, onRet OnGoReturn) {
+func (a *ActorManager) Go(run GoRun, onRet OnReturn) {
 	a.wg.Add(1)
 	go func() {
 		defer a.wg.Done()
-		ret, err := run(a.ExitChan, event)
+		ret, err := run(a.ExitChan)
 		if onRet != nil {
 			onRet(ret, err)
 		}
@@ -44,8 +44,8 @@ func Close() {
 	DefaultActorManager.Close()
 }
 
-func Go(run GoRun, parameter interface{}, onRet OnGoReturn) {
-	DefaultActorManager.Go(run, parameter, onRet)
+func Go(run GoRun, onRet OnReturn) {
+	DefaultActorManager.Go(run, onRet)
 }
 
 func Wait() {

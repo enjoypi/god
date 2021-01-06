@@ -10,8 +10,12 @@ import (
 func TestNewSupervisor(t *testing.T) {
 	sup := NewSupervisor()
 	require.NotNil(t, sup)
-	require.True(t, sup.Start(sampleActorType))
+
+	a := sup.Start(sampleActorType)
+	require.NotNil(t, a)
+	a.Post("hello")
 	go func() {
+		a.Post("word")
 		time.Sleep(time.Second)
 		Close()
 	}()

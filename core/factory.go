@@ -1,28 +1,42 @@
 package core
 
-import "go.uber.org/zap"
+import (
+	"sync"
 
-type actorFactory map[ActorType]NewActor
-
-var (
-	defaultActorFactory = make(actorFactory)
+	"go.uber.org/zap"
 )
 
-func (factory actorFactory) RegisterActorCreator(actorType ActorType, creator NewActor) bool {
-	_, ok := factory[actorType]
+type Factory struct {
+	sync.Map
+}
+
+var (
+	DefaultFactory Factory
+)
+
+func (factory *Factory) RegisterCreator(actorType ActorType, creator ActorCreator) bool {
+	_, ok := factory.Load(actorType)
 	if ok {
 		logger.Error("the actor creator is already registered", zap.Int64("actorType", actorType))
 		return false
 	}
-	factory[actorType] = creator
+	factory.Store(actorType, creator)
 	return true
 }
 
-func (factory actorFactory) new(actorType ActorType) Actor {
-	creator, ok := factory[actorType]
+func (factory *Factory) NewActor(actorType ActorType) Actor {
+	creator, ok := factory.Load(actorType)
 	if ok {
-		return creator()
+		return creator.(ActorCreator)()
 	}
 	logger.Error("no actor creator for this type", zap.Int64("actorType", actorType))
 	return nil
+}
+
+func RegisterActorCreator(actorType ActorType, creator ActorCreator) bool {
+	return DefaultFactory.RegisterCreator(actorType, creator)
+}
+
+func NewActor(actorType ActorType) Actor {
+	return DefaultFactory.NewActor(actorType)
 }

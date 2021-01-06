@@ -26,18 +26,21 @@ func (sup *Supervisor) HandleActor(actor ActorID, message Message) {
 
 }
 func (sup *Supervisor) Start(actorType ActorType) Actor {
-	actor := defaultActorFactory.new(actorType)
+	actor := NewActor(actorType)
 	if actor == nil {
 		return nil
 	}
 
+	// actor must be initial before using, or maybe lock
+	if err := actor.Initialize(); err != nil {
+		logger.Error(err.Error())
+		return nil
+	}
+
 	Go(func(exitChan ExitChan) (Message, error) {
-		if err := actor.Initialize(); err != nil {
-			return nil, err
-		}
 		defer actor.Terminate()
 
-		mq := actor.MessageQueue()
+		mq := actor.messageQueue()
 		for {
 			select {
 			case msg := <-mq:

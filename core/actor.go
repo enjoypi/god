@@ -1,37 +1,57 @@
 package core
 
-type DefaultImplement interface {
-	ID() ActorID
-	MessageQueue() MessageQueue
+import "fmt"
 
+type Receiver interface {
 	Post(message Message) // post message to actor's message queue, must thread safe
 }
 
+type DefaultImplement interface {
+	ID() ActorID
+	messageQueue() MessageQueue
+	setID(id ActorID)
+
+	Receiver
+}
+
 type Actor interface {
-	Handle(message Message) Message // be called by actor's goroutine
-	Initialize() error              // must be called by supervisor
+	Handle(message Message) Message // will be called by actor's goroutine
+	Initialize() error              // will be called by supervisor
 	Terminate()                     // must thread safe
 
 	DefaultImplement
 }
-type NewActor func() Actor
+type ActorCreator func() Actor
 
-type ActorImpl struct {
+type DefaultActor struct {
 	id ActorID
 	mq MessageQueue
 }
 
-func (a *ActorImpl) MessageQueue() MessageQueue {
-	return a.mq
+// must be called by outer Initialize and ignore error
+func (a *DefaultActor) Initialize() error {
+	a.mq = make(MessageQueue, 1)
+	return fmt.Errorf("no Initialize implment")
 }
 
-func (a *ActorImpl) ID() ActorID {
+func (a *DefaultActor) ID() ActorID {
 	return a.id
 }
 
-func (a *ActorImpl) Post(message Message) {
-	if a.mq == nil {
-		a.mq = make(MessageQueue, 1)
-	}
+// no any check for performance
+// Post will lock if the mq has not been initial
+func (a *DefaultActor) Post(message Message) {
 	a.mq <- message
+}
+
+func (a *DefaultActor) Terminate() {
+
+}
+
+func (a *DefaultActor) messageQueue() MessageQueue {
+	return a.mq
+}
+
+func (a *DefaultActor) setID(id ActorID) {
+	a.id = id
 }

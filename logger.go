@@ -1,15 +1,15 @@
-package core
+package god
 
 import "go.uber.org/zap"
 
 var (
-	logger *zap.Logger
+	Logger *zap.Logger
 )
 
 func init() {
-	logger, _ = zap.NewProduction()
+	Logger, _ = zap.NewProduction()
 }
 
 func ReplaceLogger(l *zap.Logger) {
-	logger = l
+	Logger = l
 }

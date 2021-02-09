@@ -1,5 +1,7 @@
 package core
 
+import "github.com/enjoypi/god"
+
 type Supervisor struct {
 	Actor
 }
@@ -7,7 +9,7 @@ type Supervisor struct {
 func NewSupervisor() *Supervisor {
 	sup := &Supervisor{}
 	if err := sup.Initialize(); err != nil {
-		logger.Panic(err.Error())
+		god.Logger.Panic(err.Error())
 		return nil
 	}
 
@@ -33,7 +35,7 @@ func (sup *Supervisor) Start(actorType ActorType) Actor {
 
 	// actor must be initial before using, or maybe lock
 	if err := actor.Initialize(); err != nil {
-		logger.Error(err.Error())
+		god.Logger.Error(err.Error())
 		return nil
 	}
 

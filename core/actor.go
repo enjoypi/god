@@ -15,9 +15,9 @@ type DefaultImplement interface {
 }
 
 type Actor interface {
-	Handle(message Message) Message // will be called by actor's goroutine
+	Handle(message Message) Message // will be called in actor's goroutine
 	Initialize() error              // will be called by supervisor
-	Terminate()                     // must thread safe
+	Terminate()                     // will be called in actor's goroutine
 
 	DefaultImplement
 }

@@ -25,6 +25,10 @@ func (a *ActorManager) Close() {
 	close(a.ExitChan)
 }
 
+func (a *ActorManager) Get(id ActorID) Actor {
+	return nil
+}
+
 func (a *ActorManager) Go(run GoRun, onRet OnReturn) {
 	a.wg.Add(1)
 	go func() {

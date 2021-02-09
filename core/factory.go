@@ -3,6 +3,8 @@ package core
 import (
 	"sync"
 
+	"github.com/enjoypi/god"
+
 	"go.uber.org/zap"
 )
 
@@ -17,7 +19,7 @@ var (
 func (factory *Factory) RegisterCreator(actorType ActorType, creator ActorCreator) bool {
 	_, ok := factory.Load(actorType)
 	if ok {
-		logger.Error("the actor creator is already registered", zap.Int64("actorType", actorType))
+		god.Logger.Error("the actor creator is already registered", zap.Int64("actorType", actorType))
 		return false
 	}
 	factory.Store(actorType, creator)
@@ -29,7 +31,7 @@ func (factory *Factory) NewActor(actorType ActorType) Actor {
 	if ok {
 		return creator.(ActorCreator)()
 	}
-	logger.Error("no actor creator for this type", zap.Int64("actorType", actorType))
+	god.Logger.Error("no actor creator for this type", zap.Int64("actorType", actorType))
 	return nil
 }
 

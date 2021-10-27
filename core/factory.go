@@ -4,7 +4,6 @@ import (
 	"sync"
 
 	"github.com/enjoypi/god"
-
 	"go.uber.org/zap"
 )
 

@@ -3,7 +3,7 @@ package mesh
 import (
 	"context"
 
-	etcdclient "go.etcd.io/etcd/clientv3"
+	etcdclient "go.etcd.io/etcd/client/v3"
 	"go.uber.org/zap"
 )
 

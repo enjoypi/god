@@ -18,7 +18,7 @@ var (
 func (factory *Factory) RegisterCreator(actorType ActorType, creator ActorCreator) bool {
 	_, ok := factory.Load(actorType)
 	if ok {
-		god.Logger.Error("the actor creator is already registered", zap.Int64("actorType", actorType))
+		god.L.Error("the actor creator is already registered", zap.Int64("actorType", actorType))
 		return false
 	}
 	factory.Store(actorType, creator)
@@ -30,7 +30,7 @@ func (factory *Factory) NewActor(actorType ActorType) Actor {
 	if ok {
 		return creator.(ActorCreator)()
 	}
-	god.Logger.Error("no actor creator for this type", zap.Int64("actorType", actorType))
+	god.L.Error("no actor creator for this type", zap.Int64("actorType", actorType))
 	return nil
 }
 

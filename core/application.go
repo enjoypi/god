@@ -1,10 +1,6 @@
 package core
 
 type Application interface {
-	//ChangeConfig(Changed, New, Removed)
-	Name() string
-	Start() error
-	Stop()
 }
 
 var (

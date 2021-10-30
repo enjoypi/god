@@ -9,7 +9,7 @@ type Supervisor struct {
 func NewSupervisor() *Supervisor {
 	sup := &Supervisor{}
 	if err := sup.Initialize(); err != nil {
-		god.Logger.Panic(err.Error())
+		god.L.Panic(err.Error())
 		return nil
 	}
 
@@ -35,7 +35,7 @@ func (sup *Supervisor) Start(actorType ActorType) Actor {
 
 	// actor must be initial before using, or maybe lock
 	if err := actor.Initialize(); err != nil {
-		god.Logger.Error(err.Error())
+		god.L.Error(err.Error())
 		return nil
 	}
 

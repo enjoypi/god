@@ -1,5 +1,4 @@
 @startuml
-
 package "stdlib" {
 HTTP - [First Component]
 [Another Component]

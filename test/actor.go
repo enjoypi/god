@@ -3,18 +3,20 @@ package test
 import (
 	"math/rand"
 
-	"github.com/enjoypi/god/core"
+	"github.com/enjoypi/god/types"
+
+	"github.com/enjoypi/god/stdlib"
 	"go.uber.org/zap"
 )
 
 type sampleActor struct {
-	core.DefaultActor
+	stdlib.DefaultActor
 }
 
-var _ core.Actor = (*sampleActor)(nil)
+var _ stdlib.Actor = (*sampleActor)(nil)
 var logger *zap.Logger
 
-func (s *sampleActor) Handle(message core.Message) core.Message {
+func (s *sampleActor) Handle(message types.Message) types.Message {
 	logger.Debug("handle", zap.Any("message", message))
 	return nil
 }
@@ -29,9 +31,9 @@ var sampleActorType = rand.Int63()
 
 func init() {
 	logger, _ = zap.NewDevelopment()
-	core.RegisterActorCreator(sampleActorType, newSampleActor)
+	stdlib.RegisterActorCreator(sampleActorType, newSampleActor)
 }
 
-func newSampleActor() core.Actor {
+func newSampleActor() stdlib.Actor {
 	return &sampleActor{}
 }

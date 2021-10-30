@@ -1,8 +1,10 @@
-package core
+package stdlib
+
+import "github.com/enjoypi/god/types"
 
 // thread safe
 // post message to actor, if no in this nod, then post message to the node of the actor
-func Post(sender ActorID, receiver ActorID, message Message) {
+func Post(sender types.ActorID, receiver types.ActorID, message types.Message) {
 	actor := DefaultActorManager.Get(receiver)
 	if actor != nil {
 		actor.Post(message)
@@ -21,10 +23,10 @@ func Post(sender ActorID, receiver ActorID, message Message) {
 type Node struct {
 }
 
-func (n *Node) Post(sender ActorID, receiver ActorID, message Message) {
+func (n *Node) Post(sender types.ActorID, receiver types.ActorID, message types.Message) {
 
 }
 
-func GetNode(receiver ActorID) *Node {
+func GetNode(receiver types.ActorID) *Node {
 	return nil
 }

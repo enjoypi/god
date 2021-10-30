@@ -1,12 +1,14 @@
-package core
+package stdlib
 
 import (
 	"sync"
+
+	"github.com/enjoypi/god/types"
 )
 
 type ExitChan chan int
-type GoRun func(ExitChan) (Message, error)
-type OnReturn func(Message, error)
+type GoRun func(ExitChan) (types.Message, error)
+type OnReturn func(types.Message, error)
 
 type ActorManager struct {
 	wg sync.WaitGroup
@@ -25,7 +27,7 @@ func (a *ActorManager) Close() {
 	close(a.ExitChan)
 }
 
-func (a *ActorManager) Get(id ActorID) Actor {
+func (a *ActorManager) Get(id types.ActorID) Actor {
 	return nil
 }
 

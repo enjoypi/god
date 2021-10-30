@@ -2,7 +2,7 @@ package application
 
 //import (
 //	"github.com/enjoypi/god"
-//	"github.com/enjoypi/god/core"
+//	"github.com/enjoypi/god/stdlib"
 //	"github.com/enjoypi/god/pb"
 //	mb "github.com/enjoypi/god/transports/t_nats"
 //	"github.com/nats-io/nats.go"
@@ -80,7 +80,7 @@ package application
 //				continue
 //			}
 //		}
-//		core.Go(func(exitChan core.ExitChan, parameter interface{}) (interface{}, error) {
+//		stdlib.Go(func(exitChan stdlib.ExitChan, parameter interface{}) (interface{}, error) {
 //			svc := parameter.(*Service)
 //			svc.Run(exitChan)
 //
@@ -88,7 +88,7 @@ package application
 //		}, svc, nil)
 //	}
 //
-//	core.Wait()
+//	stdlib.Wait()
 //	return nil
 //}
 //
@@ -97,5 +97,5 @@ package application
 //}
 //
 //func (n *Node) Terminate() {
-//	core.Close()
+//	stdlib.Close()
 //}

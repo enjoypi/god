@@ -4,12 +4,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/enjoypi/god/core"
+	"github.com/enjoypi/god/stdlib"
 	"github.com/stretchr/testify/require"
 )
 
 func TestNewSupervisor(t *testing.T) {
-	sup := core.NewSupervisor()
+	sup := stdlib.NewSupervisor()
 	require.NotNil(t, sup)
 
 	a := sup.Start(sampleActorType)
@@ -18,7 +18,7 @@ func TestNewSupervisor(t *testing.T) {
 	go func() {
 		a.Post("word")
 		time.Sleep(time.Second)
-		core.Close()
+		stdlib.Close()
 	}()
-	core.Wait()
+	stdlib.Wait()
 }

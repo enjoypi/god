@@ -19,7 +19,7 @@ package net
 //		childState: childState,
 //	}
 //	svc.godSvc = application.NewService(logger, svc, initialState, svc)
-//	core.Go(func(core.ExitChan, interface{}) (interface{}, error) {
+//	stdlib.Go(func(stdlib.ExitChan, interface{}) (interface{}, error) {
 //		err := svc.Serve()
 //		return nil, err
 //	}, nil, nil)
@@ -46,7 +46,7 @@ package net
 //		return err
 //	}
 //
-//	actor.Run(core.DefaultActors.ExitChan)
+//	actor.Run(stdlib.DefaultActors.ExitChan)
 //	svc.godSvc.RemoveAgent(actor.ID)
 //	return nil
 //}

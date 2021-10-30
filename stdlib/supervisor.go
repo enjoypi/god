@@ -1,6 +1,8 @@
-package core
+package stdlib
 
-import "github.com/enjoypi/god"
+import (
+	"github.com/enjoypi/god/types"
+)
 
 type Supervisor struct {
 	Actor
@@ -9,7 +11,7 @@ type Supervisor struct {
 func NewSupervisor() *Supervisor {
 	sup := &Supervisor{}
 	if err := sup.Initialize(); err != nil {
-		god.L.Panic(err.Error())
+		L.Panic(err.Error())
 		return nil
 	}
 
@@ -20,14 +22,14 @@ func (sup *Supervisor) Initialize() error {
 	return nil
 }
 
-func (sup *Supervisor) Handle(message Message) Message {
+func (sup *Supervisor) Handle(message types.Message) types.Message {
 	return nil
 }
 
-func (sup *Supervisor) HandleActor(actor ActorID, message Message) {
+func (sup *Supervisor) HandleActor(actor types.ActorID, message types.Message) {
 
 }
-func (sup *Supervisor) Start(actorType ActorType) Actor {
+func (sup *Supervisor) Start(actorType types.ActorType) Actor {
 	actor := NewActor(actorType)
 	if actor == nil {
 		return nil
@@ -35,11 +37,11 @@ func (sup *Supervisor) Start(actorType ActorType) Actor {
 
 	// actor must be initial before using, or maybe lock
 	if err := actor.Initialize(); err != nil {
-		god.L.Error(err.Error())
+		L.Error(err.Error())
 		return nil
 	}
 
-	Go(func(exitChan ExitChan) (Message, error) {
+	Go(func(exitChan ExitChan) (types.Message, error) {
 		defer actor.Terminate()
 
 		mq := actor.messageQueue()
@@ -48,10 +50,10 @@ func (sup *Supervisor) Start(actorType ActorType) Actor {
 			case msg := <-mq:
 				actor.Handle(msg)
 			case <-exitChan:
-				return EvStopped, nil
+				return types.EvStopped, nil
 			}
 		}
-	}, func(message Message, err error) {
+	}, func(message types.Message, err error) {
 		sup.HandleActor(actor.ID(), message)
 	})
 

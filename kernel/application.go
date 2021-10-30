@@ -1,21 +1,19 @@
-package god
+package kernel
 
-import "github.com/spf13/viper"
-
-type Application interface {
-	//ChangeConfig(Changed, New, Removed) error
-	PrepareStop()
-	Name() string
-	Start(v *viper.Viper) error
-	Stop()
-}
-
-type NewApplication func(v *viper.Viper) (Application, error)
+import (
+	"github.com/enjoypi/god/types"
+	"github.com/spf13/viper"
+)
 
 var (
-	applicationFactory map[string]NewApplication
-	applications       []Application
+	applicationFactory map[string]types.NewApplication
+	applications       []types.Application
 )
+
+func init() {
+	applicationFactory = make(map[string]types.NewApplication)
+	applications = make([]types.Application, 0)
+}
 
 func initializeApplications(v *viper.Viper, apps []string) error {
 	defer func() {
@@ -52,6 +50,6 @@ func startApplication(v *viper.Viper, name string) error {
 	return nil
 }
 
-func RegisterApplication(name string, creator NewApplication) {
-
+func RegisterApplication(name string, creator types.NewApplication) {
+	applicationFactory[name] = creator
 }

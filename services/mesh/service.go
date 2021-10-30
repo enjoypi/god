@@ -6,7 +6,7 @@ package mesh
 //	"github.com/enjoypi/god/application"
 //	"io"
 //
-//	"github.com/enjoypi/god/core"
+//	"github.com/enjoypi/god/stdlib"
 //
 //	"github.com/enjoypi/god/pb"
 //	mb "github.com/enjoypi/god/transports/t_nats"
@@ -117,7 +117,7 @@ package mesh
 //	}
 //
 //	if err == nil {
-//		core.Go(m.keepAlive, leaseID, m.onDropped)
+//		stdlib.Go(m.keepAlive, leaseID, m.onDropped)
 //	}
 //	return err
 //}
@@ -156,7 +156,7 @@ package mesh
 //	}
 //}
 //
-//func (m *main) keepAlive(exitChan core.ExitChan, i interface{}) (interface{}, error) {
+//func (m *main) keepAlive(exitChan stdlib.ExitChan, i interface{}) (interface{}, error) {
 //	leaseID := i.(etcdclient.LeaseID)
 //
 //	keepChan, err := m.Client.KeepAlive(context.Background(), leaseID)

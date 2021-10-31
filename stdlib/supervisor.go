@@ -55,10 +55,10 @@ func (sup *Supervisor) Start(v *viper.Viper, actorType types.ActorType) (Actor, 
 
 			select {
 			case msg := <-mq:
-				if ce := logger.L.Check(zapcore.DebugLevel, "receive message"); ce != nil {
+				if ce := logger.L.Check(zapcore.DebugLevel, "RECV"); ce != nil {
 					ce.Write(
+						zap.String("type", actorType),
 						zap.String("actor", fmt.Sprintf("%p", actor)),
-						zap.String("mq", fmt.Sprintf("%p", mq)),
 						zap.Any("message", msg))
 				}
 				if err := actor.Handle(msg); err != nil {

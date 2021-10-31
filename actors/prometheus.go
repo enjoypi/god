@@ -1,11 +1,9 @@
 package actors
 
 import (
-	"github.com/enjoypi/god/logger"
 	"github.com/enjoypi/god/stdlib"
 	"github.com/enjoypi/god/types"
 	"github.com/spf13/viper"
-	"go.uber.org/zap"
 )
 
 const actorTypePrometheus = "prometheus"
@@ -21,10 +19,6 @@ func (a *actorPrometheus) Initialize(v *viper.Viper) error {
 }
 
 func (a *actorPrometheus) onStart(message types.Message) types.Message {
-	logger.L.Debug("onStart",
-		zap.String("actor", a.Type()),
-	)
-
 	return nil
 }
 func newPrometheus() stdlib.Actor {

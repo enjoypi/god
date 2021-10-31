@@ -38,23 +38,30 @@ func (a *actorNats) Initialize(v *viper.Viper) error {
 	opts.Url = cfg.Nats.Url
 	opts.DisconnectedErrCB = a.onDisconnected
 	opts.ReconnectedCB = a.onReconnected
+	opts.RetryOnFailedConnect = true
 
+	logger.L.Info("initialize NATS",
+		zap.String("options", fmt.Sprintf("%+v", opts)))
+
+	a.Register(error(nil), a.onError)
 	a.Register(types.EvStart, a.onStart)
 	return nil
 }
 
-func (a *actorNats) onStart(message types.Message) types.Message {
-	logger.L.Debug("onStart",
-		zap.String("actor", a.Type()),
-	)
+func (a *actorNats) onError(message types.Message) types.Message {
+	logger.L.Error("error message", zap.Error(message.(error)))
+	return nil
+}
 
+func (a *actorNats) onStart(message types.Message) types.Message {
 	nc, err := a.Options.Connect()
 	if err != nil {
-		return err
+		logger.L.Warn("connect NATS", zap.Error(err))
+		return nil
 	}
 	conn = nc
-	Subscribe(">")
-	logger.L.Debug("NATS connected", zap.String("url", conn.ConnectedUrl()))
+	logger.L.Info("NATS connected", zap.String("url", conn.ConnectedUrl()))
+	logger.CheckError("subscribe NATS", Subscribe(actorTypeNats))
 	return nil
 }
 
@@ -82,14 +89,15 @@ func Subscribe(subj string) error {
 
 func handleNatsMsg(msg *nats.Msg) {
 	m := natsMsg2Message(msg)
-	logger.Warn("handle NATS msg", PostActor(actorTypeNats, m))
+	logger.CheckError("handle NATS msg", Post2Actor(actorTypeNats, m))
 }
 
 func natsMsg2Message(msg *nats.Msg) types.Message {
-	return types.EvNone
+	return string(msg.Data)
 }
 
-func PostActor(name string, message types.Message) error {
+func Post2Actor(name string, message types.Message) error {
+	logger.L.Debug("post to actor", zap.String("actor", name), zap.Any("message", message))
 	return nil
 }
 

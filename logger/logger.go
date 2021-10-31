@@ -42,8 +42,8 @@ func Initialize(v *viper.Viper) error {
 	return nil
 }
 
-func Warn(msg string, err error) {
+func CheckError(msg string, err error) {
 	if err != nil {
-		L.Warn(msg, zap.Error(err))
+		L.Error(msg, zap.Error(err))
 	}
 }

@@ -7,6 +7,7 @@ import (
 	"github.com/enjoypi/god/types"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 type Handler interface {
@@ -86,10 +87,12 @@ func (a *DefaultActor) Type() types.ActorType {
 // no any check for performance
 // Post will lock if the mq has not been initial
 func (a *DefaultActor) Post(message types.Message) {
-	logger.L.Debug("post message",
-		zap.String("actor", fmt.Sprintf("%p", a)),
-		zap.String("mq", fmt.Sprintf("%p", a.mq)),
-		zap.Any("message", message))
+	if ce := logger.L.Check(zapcore.DebugLevel, "POST"); ce != nil {
+		ce.Write(
+			zap.String("type", a.actorType),
+			zap.String("actor", fmt.Sprintf("%p", a)),
+			zap.Any("message", message))
+	}
 	a.mq <- message
 }
 

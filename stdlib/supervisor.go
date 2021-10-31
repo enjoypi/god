@@ -3,7 +3,9 @@ package stdlib
 import (
 	"fmt"
 
+	"github.com/enjoypi/god/logger"
 	"github.com/enjoypi/god/types"
+	"github.com/spf13/viper"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -33,14 +35,14 @@ func (sup *Supervisor) Handle(message types.Message) types.Message {
 func (sup *Supervisor) HandleActor(actor types.ActorID, message types.Message) {
 
 }
-func (sup *Supervisor) Start(actorType types.ActorType) (Actor, error) {
+func (sup *Supervisor) Start(v *viper.Viper, actorType types.ActorType) (Actor, error) {
 	actor := NewActor(actorType)
 	if actor == nil {
 		return nil, fmt.Errorf("invalid actor type")
 	}
 
 	// actor must be initial before using, or maybe lock
-	if err := actor.Initialize(); err != nil {
+	if err := actor.Initialize(v); err != nil {
 		return nil, err
 	}
 
@@ -53,14 +55,14 @@ func (sup *Supervisor) Start(actorType types.ActorType) (Actor, error) {
 
 			select {
 			case msg := <-mq:
-				if ce := L.Check(zapcore.DebugLevel, "receive message"); ce != nil {
+				if ce := logger.L.Check(zapcore.DebugLevel, "receive message"); ce != nil {
 					ce.Write(
 						zap.String("actor", fmt.Sprintf("%p", actor)),
 						zap.String("mq", fmt.Sprintf("%p", mq)),
 						zap.Any("message", msg))
 				}
 				if err := actor.Handle(msg); err != nil {
-					L.Warn("handle wrong", zap.Error(err))
+					logger.L.Warn("handle wrong", zap.Error(err))
 				}
 			case <-exitChan:
 				return types.EvStopped, nil

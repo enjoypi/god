@@ -3,6 +3,7 @@ package stdlib
 import (
 	"sync"
 
+	"github.com/enjoypi/god/logger"
 	"github.com/enjoypi/god/types"
 	"go.uber.org/zap"
 )
@@ -18,7 +19,7 @@ var (
 func (factory *Factory) RegisterCreator(actorType types.ActorType, creator ActorCreator) bool {
 	_, ok := factory.Load(actorType)
 	if ok {
-		L.Error("the actor creator is already registered", zap.String("actorType", actorType))
+		logger.L.Error("the actor creator is already registered", zap.String("actorType", actorType))
 		return false
 	}
 	factory.Store(actorType, creator)
@@ -32,7 +33,7 @@ func (factory *Factory) NewActor(actorType types.ActorType) Actor {
 		actor.setType(actorType)
 		return actor
 	}
-	L.Error("no actor creator for this type", zap.String("actorType", actorType))
+	logger.L.Error("no actor creator for this type", zap.String("actorType", actorType))
 	return nil
 }
 

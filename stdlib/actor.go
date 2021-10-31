@@ -3,7 +3,9 @@ package stdlib
 import (
 	"fmt"
 
+	"github.com/enjoypi/god/logger"
 	"github.com/enjoypi/god/types"
+	"github.com/spf13/viper"
 	"go.uber.org/zap"
 )
 
@@ -30,8 +32,8 @@ type DefaultImplement interface {
 }
 
 type Actor interface {
-	Initialize() error // will be called by supervisor
-	Terminate()        // will be called in actor's goroutine
+	Initialize(v *viper.Viper) error // will be called by supervisor
+	Terminate()                      // will be called in actor's goroutine
 
 	DefaultImplement
 }
@@ -54,7 +56,7 @@ func (a *DefaultActor) Initialize() error {
 func (a *DefaultActor) Handle(message types.Message) error {
 	h, ok := a.reactors[message]
 	if !ok {
-		L.Warn("invalid reactor in actor",
+		logger.L.Warn("invalid reactor in actor",
 			zap.String("type", a.actorType),
 			zap.Any("ID", a.id),
 			zap.Any("message", message),
@@ -84,7 +86,7 @@ func (a *DefaultActor) Type() types.ActorType {
 // no any check for performance
 // Post will lock if the mq has not been initial
 func (a *DefaultActor) Post(message types.Message) {
-	L.Debug("post message",
+	logger.L.Debug("post message",
 		zap.String("actor", fmt.Sprintf("%p", a)),
 		zap.String("mq", fmt.Sprintf("%p", a.mq)),
 		zap.Any("message", message))

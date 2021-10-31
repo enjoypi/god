@@ -3,13 +3,14 @@ package god
 import (
 	_ "github.com/enjoypi/god/actors"
 	_ "github.com/enjoypi/god/kernel"
+	"github.com/enjoypi/god/logger"
 	"github.com/enjoypi/god/stdlib"
 	"github.com/spf13/viper"
 )
 
 func Initialize(v *viper.Viper) error {
 
-	if err := stdlib.Initialize(v); err != nil {
+	if err := logger.Initialize(v); err != nil {
 		return err
 	}
 

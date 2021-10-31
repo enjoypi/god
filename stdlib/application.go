@@ -1,4 +1,4 @@
-package kernel
+package stdlib
 
 import (
 	"github.com/enjoypi/god/types"
@@ -15,7 +15,7 @@ func init() {
 	applications = make([]types.Application, 0)
 }
 
-func initializeApplications(v *viper.Viper, apps []string) error {
+func StartApplications(v *viper.Viper, apps []string) error {
 	defer func() {
 		// TODO: destroy on error
 		for _, app := range applications {
@@ -24,14 +24,14 @@ func initializeApplications(v *viper.Viper, apps []string) error {
 	}()
 
 	for _, name := range apps {
-		if err := startApplication(v, name); err != nil {
+		if err := StartApplication(v, name); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func startApplication(v *viper.Viper, name string) error {
+func StartApplication(v *viper.Viper, name string) error {
 	creator, ok := applicationFactory[name]
 	if !ok {
 		return ErrNoSuchApplication

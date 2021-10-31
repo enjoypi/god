@@ -1,6 +1,7 @@
 package kernel
 
 import (
+	"github.com/enjoypi/god/stdlib"
 	"github.com/enjoypi/god/types"
 	"github.com/spf13/viper"
 )
@@ -8,14 +9,26 @@ import (
 const name = "kernel"
 
 func init() {
-	RegisterApplication(name, newKernel)
+	stdlib.RegisterApplication(name, newKernel)
 }
 
 type kernel struct {
+	sup *stdlib.Supervisor
+
+	discovery stdlib.Actor
+	monitor   stdlib.Actor
+	messaging stdlib.Actor
 }
 
 func newKernel(v *viper.Viper) (types.Application, error) {
-	return &kernel{}, nil
+	sup, err := stdlib.NewSupervisor()
+	if err != nil {
+		return nil, err
+	}
+
+	return &kernel{
+		sup: sup,
+	}, nil
 }
 
 func (k *kernel) PrepareStop() {
@@ -27,26 +40,22 @@ func (k *kernel) Name() string {
 }
 
 func (k *kernel) Start(v *viper.Viper) error {
+	var cfg Config
+	if err := v.Unmarshal(&cfg); err != nil {
+		return err
+	}
 
+	cfg.ActorType = []string{"etcd", "nats", "prometheus"}
+	for _, actorType := range cfg.ActorType {
+		actor, err := k.sup.Start(actorType)
+		if err != nil {
+			return err
+		}
+		actor.Post(types.EvStart)
+	}
 	return nil
 }
 
 func (k *kernel) Stop() {
 
-}
-
-func Start(v *viper.Viper) error {
-	var cfg Config
-	if err := viper.Unmarshal(&cfg); err != nil {
-		return err
-	}
-
-	if err := startApplication(v, "kernel"); err != nil {
-		return err
-	}
-
-	if err := initializeApplications(v, cfg.Apps); err != nil {
-
-	}
-	return nil
 }

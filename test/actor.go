@@ -1,8 +1,6 @@
 package test
 
 import (
-	"math/rand"
-
 	"github.com/enjoypi/god/types"
 
 	"github.com/enjoypi/god/stdlib"
@@ -16,7 +14,7 @@ type sampleActor struct {
 var _ stdlib.Actor = (*sampleActor)(nil)
 var logger *zap.Logger
 
-func (s *sampleActor) Handle(message types.Message) types.Message {
+func (s *sampleActor) Handle(message types.Message) error {
 	logger.Debug("handle", zap.Any("message", message))
 	return nil
 }
@@ -27,7 +25,7 @@ func (s *sampleActor) Initialize() error {
 	return nil
 }
 
-var sampleActorType = rand.Int63()
+var sampleActorType = "sample"
 
 func init() {
 	logger, _ = zap.NewDevelopment()

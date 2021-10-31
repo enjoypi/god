@@ -1,7 +1,7 @@
 package god
 
 import (
-	"github.com/enjoypi/god/kernel"
+	_ "github.com/enjoypi/god/actors"
 	_ "github.com/enjoypi/god/kernel"
 	"github.com/enjoypi/god/stdlib"
 	"github.com/spf13/viper"
@@ -13,10 +13,16 @@ func Initialize(v *viper.Viper) error {
 		return err
 	}
 
-	if err := kernel.Start(v); err != nil {
+	var cfg Config
+	if err := viper.Unmarshal(&cfg); err != nil {
 		return err
 	}
-	return nil
+
+	if err := stdlib.StartApplication(v, "kernel"); err != nil {
+		return err
+	}
+
+	return stdlib.StartApplications(v, cfg.Apps)
 }
 
 func Wait() {

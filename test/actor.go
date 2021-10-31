@@ -2,6 +2,7 @@ package test
 
 import (
 	"github.com/enjoypi/god/types"
+	"github.com/spf13/viper"
 
 	"github.com/enjoypi/god/stdlib"
 	"go.uber.org/zap"
@@ -19,7 +20,7 @@ func (s *sampleActor) Handle(message types.Message) error {
 	return nil
 }
 
-func (s *sampleActor) Initialize() error {
+func (s *sampleActor) Initialize(v *viper.Viper) error {
 	_ = s.DefaultActor.Initialize()
 	logger.Info("initialize")
 	return nil

@@ -5,6 +5,7 @@ import (
 
 	"github.com/enjoypi/god/types"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 type Supervisor struct {
@@ -52,11 +53,15 @@ func (sup *Supervisor) Start(actorType types.ActorType) (Actor, error) {
 
 			select {
 			case msg := <-mq:
-				L.Debug("receive message",
-					zap.String("actor", fmt.Sprintf("%p", actor)),
-					zap.String("mq", fmt.Sprintf("%p", mq)),
-					zap.Any("message", msg))
-				actor.Handle(msg)
+				if ce := L.Check(zapcore.DebugLevel, "receive message"); ce != nil {
+					ce.Write(
+						zap.String("actor", fmt.Sprintf("%p", actor)),
+						zap.String("mq", fmt.Sprintf("%p", mq)),
+						zap.Any("message", msg))
+				}
+				if err := actor.Handle(msg); err != nil {
+					L.Warn("handle wrong", zap.Error(err))
+				}
 			case <-exitChan:
 				return types.EvStopped, nil
 			}

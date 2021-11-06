@@ -65,7 +65,7 @@ func (sup *Supervisor) Start(v *viper.Viper, actorType types.ActorType) (Actor, 
 					logger.L.Warn("handle wrong", zap.Error(err))
 				}
 			case <-exitChan:
-				return types.EvStopped, nil
+				return (*types.EvStopped)(nil), nil
 			}
 		}
 	}, func(message types.Message, err error) {

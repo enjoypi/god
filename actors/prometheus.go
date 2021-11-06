@@ -14,7 +14,7 @@ type actorPrometheus struct {
 
 func (a *actorPrometheus) Initialize(v *viper.Viper) error {
 	_ = a.DefaultActor.Initialize()
-	a.Register(types.EvStart, a.onStart)
+	a.RegisterReaction((*types.EvStart)(nil), a.onStart)
 	return nil
 }
 

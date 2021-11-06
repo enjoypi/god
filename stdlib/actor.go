@@ -5,6 +5,7 @@ import (
 
 	"github.com/enjoypi/god/logger"
 	"github.com/enjoypi/god/types"
+	sc "github.com/enjoypi/gostatechart"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -21,7 +22,6 @@ type Receiver interface {
 type handle func(message types.Message) types.Message // will be called in actor's goroutine
 type DefaultImplement interface {
 	ID() types.ActorID
-	Register(message types.Message, h handle)
 	Type() types.ActorType
 
 	messageQueue() types.MessageQueue
@@ -44,27 +44,25 @@ type DefaultActor struct {
 	actorType types.ActorType
 	id        types.ActorID
 	mq        types.MessageQueue
-	reactors  map[types.Message]handle
+	sc.SimpleState
 }
 
 // must be called by outer Initialize and ignore error
 func (a *DefaultActor) Initialize() error {
 	a.mq = make(types.MessageQueue, 1)
-	a.reactors = make(map[types.Message]handle)
 	return fmt.Errorf("no Initialize implment")
 }
 
 func (a *DefaultActor) Handle(message types.Message) error {
-	h, ok := a.reactors[message]
-	if !ok {
-		logger.L.Warn("invalid reactor in actor",
-			zap.String("type", a.actorType),
-			zap.Any("ID", a.id),
-			zap.Any("message", message),
-		)
-		return nil
-	}
-	ret := h(message)
+	//if !ok {
+	//	logger.L.Warn("invalid reactor in actor",
+	//		zap.String("type", a.actorType),
+	//		zap.Any("ID", a.id),
+	//		zap.Any("message", message),
+	//	)
+	//	return nil
+	//}
+	ret := a.SimpleState.React(message)
 	if ret != nil {
 		a.Post(ret)
 	}
@@ -74,10 +72,6 @@ func (a *DefaultActor) Handle(message types.Message) error {
 
 func (a *DefaultActor) ID() types.ActorID {
 	return a.id
-}
-
-func (a *DefaultActor) Register(message types.Message, h handle) {
-	a.reactors[message] = h
 }
 
 func (a *DefaultActor) Type() types.ActorType {

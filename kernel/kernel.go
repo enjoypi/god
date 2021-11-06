@@ -51,7 +51,7 @@ func (k *kernel) Start(v *viper.Viper) error {
 		if err != nil {
 			return err
 		}
-		actor.Post(types.EvStart)
+		actor.Post(&types.EvStart{})
 	}
 	return nil
 }

@@ -42,8 +42,9 @@ func (a *actorNats) Initialize(v *viper.Viper) error {
 	logger.L.Info("initialize NATS",
 		zap.String("options", fmt.Sprintf("%+v", opts)))
 
-	a.Register(error(nil), a.onError)
-	a.Register(types.EvStart, a.onStart)
+	a.RegisterReaction(error(nil), a.onError)
+	a.RegisterReaction((*types.EvStart)(nil), a.onStart)
+	a.RegisterReaction((*types.Subscription)(nil), a.onSubscribe)
 	return nil
 }
 
@@ -63,7 +64,26 @@ func (a *actorNats) onStart(message types.Message) types.Message {
 	}
 	conn = nc
 	logger.L.Info("NATS connected", zap.String("url", conn.ConnectedUrl()))
-	logger.CheckError("subscribe NATS", Subscribe(actorTypeNats))
+	a.Post(&types.Subscription{Subject: actorTypeNats})
+	return nil
+}
+
+func (a *actorNats) onSubscribe(message types.Message) types.Message {
+	subscription := message.(*types.Subscription)
+	if conn == nil {
+		return fmt.Errorf("no NATS connection")
+	}
+
+	handler :=
+		func(msg *nats.Msg) {
+			m := natsMsg2Message(msg)
+			logger.CheckError("handle NATS msg", Post2Actor(subscription.ActorID, m))
+		}
+	_, err := conn.Subscribe(subscription.Subject, handler)
+
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -79,28 +99,12 @@ func (a *actorNats) onReconnected(nc *nats.Conn) {
 	logger.L.Info("NATS reconnected", zap.String("url", nc.ConnectedUrl()))
 }
 
-func Subscribe(subj string) error {
-	if conn == nil {
-		return fmt.Errorf("no NATS connection")
-	}
-	_, err := conn.Subscribe(subj, handleNatsMsg)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func handleNatsMsg(msg *nats.Msg) {
-	m := natsMsg2Message(msg)
-	logger.CheckError("handle NATS msg", Post2Actor(actorTypeNats, m))
-}
-
 func natsMsg2Message(msg *nats.Msg) types.Message {
 	return string(msg.Data)
 }
 
-func Post2Actor(name string, message types.Message) error {
-	logger.L.Debug("post to actor", zap.String("actor", name), zap.Any("message", message))
+func Post2Actor(id types.ActorID, message types.Message) error {
+	logger.L.Debug("post to actor", zap.Uint64("actor", id), zap.Any("message", message))
 	return nil
 }
 

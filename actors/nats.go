@@ -38,7 +38,6 @@ func (a *actorNats) Initialize(v *viper.Viper) error {
 	opts.Url = cfg.Nats.Url
 	opts.DisconnectedErrCB = a.onDisconnected
 	opts.ReconnectedCB = a.onReconnected
-	opts.RetryOnFailedConnect = true
 
 	logger.L.Info("initialize NATS",
 		zap.String("options", fmt.Sprintf("%+v", opts)))
@@ -54,9 +53,12 @@ func (a *actorNats) onError(message types.Message) types.Message {
 }
 
 func (a *actorNats) onStart(message types.Message) types.Message {
-	nc, err := a.Options.Connect()
+	opts := a.Options
+	nc, err := opts.Connect()
 	if err != nil {
-		logger.L.Warn("connect NATS", zap.Error(err))
+		logger.L.Warn("connect NATS", zap.Error(err), zap.String("url", opts.Url))
+		opts.RetryOnFailedConnect = true
+		_, _ = opts.Connect()
 		return nil
 	}
 	conn = nc
@@ -66,14 +68,15 @@ func (a *actorNats) onStart(message types.Message) types.Message {
 }
 
 func (a *actorNats) onDisconnected(nc *nats.Conn, err error) {
-	logger.L.Debug("NATS disconnected", zap.Error(err))
+	conn = nil
+	logger.L.Warn("NATS disconnected", zap.Error(err), zap.String("url", nc.Opts.Url))
 }
 
 func (a *actorNats) onReconnected(nc *nats.Conn) {
-	logger.L.Debug("NATS reconnected", zap.String("url", nc.ConnectedUrl()))
 	if conn != nc {
 		conn = nc
 	}
+	logger.L.Info("NATS reconnected", zap.String("url", nc.ConnectedUrl()))
 }
 
 func Subscribe(subj string) error {

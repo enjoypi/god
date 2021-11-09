@@ -1,10 +1,9 @@
 package test
 
 import (
+	"github.com/enjoypi/god/stdlib"
 	"github.com/enjoypi/god/types"
 	"github.com/spf13/viper"
-
-	"github.com/enjoypi/god/stdlib"
 	"go.uber.org/zap"
 )
 

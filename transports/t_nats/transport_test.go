@@ -15,7 +15,7 @@ var (
 )
 
 func init() {
-	cfg.Nats.Url = "mypc:4222" //nats.DefaultURL
+	cfg.Nats.Url = "127.0.0.1:4222" //nats.DefaultURL
 	trans = NewTransport(cfg, logger, 1)
 }
 

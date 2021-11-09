@@ -9,10 +9,10 @@ import (
 )
 
 func TestNewSupervisor(t *testing.T) {
-	sup := stdlib.NewSupervisor()
+	sup, _ := stdlib.NewSupervisor()
 	require.NotNil(t, sup)
 
-	a := sup.Start(sampleActorType)
+	a, _ := sup.Start(nil, sampleActorType)
 	require.NotNil(t, a)
 	a.Post("hello")
 	go func() {

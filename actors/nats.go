@@ -104,7 +104,7 @@ func natsMsg2Message(msg *nats.Msg) types.Message {
 }
 
 func Post2Actor(id types.ActorID, message types.Message) error {
-	logger.L.Debug("post to actor", zap.Uint64("actor", id), zap.Any("message", message))
+	logger.L.Debug("post to actor", zap.Uint16("actor", id), zap.Any("message", message))
 	return nil
 }
 

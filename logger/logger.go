@@ -11,6 +11,11 @@ var (
 	L *zap.Logger
 )
 
+// for test
+func init() {
+	L, _ = zap.NewDevelopment()
+}
+
 func Initialize(v *viper.Viper) error {
 
 	var cfg config

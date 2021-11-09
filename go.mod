@@ -3,7 +3,7 @@ module github.com/enjoypi/god
 go 1.17
 
 require (
-	github.com/enjoypi/gostatechart v0.0.0-20201230085751-3ed111c7dc52
+	github.com/enjoypi/gostatechart v0.0.0-20211106155708-bbc07dc92794
 	github.com/nats-io/nats.go v1.13.0
 	github.com/spf13/viper v1.9.0
 	github.com/stretchr/testify v1.7.0
@@ -37,9 +37,9 @@ require (
 	go.etcd.io/etcd/client/pkg/v3 v3.5.1 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.7.0 // indirect
-	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519 // indirect
-	golang.org/x/net v0.0.0-20211105192438-b53810dc28af // indirect
-	golang.org/x/sys v0.0.0-20211106132015-ebca88c72f68 // indirect
+	golang.org/x/crypto v0.0.0-20211108221036-ceb1ce70b4fa // indirect
+	golang.org/x/net v0.0.0-20211108170745-6635138e15ea // indirect
+	golang.org/x/sys v0.0.0-20211108224332-cbcd623f202e // indirect
 	golang.org/x/text v0.3.7 // indirect
 	google.golang.org/genproto v0.0.0-20211104193956-4c6863e31247 // indirect
 	gopkg.in/ini.v1 v1.63.2 // indirect

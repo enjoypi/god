@@ -42,6 +42,14 @@ func (a *ActorManager) Go(run GoRun, onRet OnReturn) {
 	}()
 }
 
+func (a *ActorManager) Post(sender types.ActorID, receiver types.ActorID, message types.Message) {
+	actor := a.Get(receiver)
+	if actor != nil {
+		actor.Post(message)
+		return
+	}
+}
+
 func (a *ActorManager) Wait() {
 	a.wg.Wait()
 }

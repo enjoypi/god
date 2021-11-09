@@ -9,12 +9,6 @@ type MessageQueue chan Message
 type NodeID = uint16
 type FullID = uint32
 
-type EvStart struct {
-}
-
-type EvStopped struct {
-}
-
 func DecodeID(id FullID) (NodeID, ActorID) {
 	return NodeID(id >> 16), ActorID(id)
 }

@@ -3,6 +3,7 @@ package stdlib
 import (
 	"fmt"
 
+	"github.com/enjoypi/god/events"
 	"github.com/enjoypi/god/logger"
 	"github.com/enjoypi/god/types"
 	"github.com/spf13/viper"
@@ -65,7 +66,7 @@ func (sup *Supervisor) Start(v *viper.Viper, actorType types.ActorType) (Actor, 
 					logger.L.Warn("handle wrong", zap.Error(err))
 				}
 			case <-exitChan:
-				return (*types.EvStopped)(nil), nil
+				return &events.EvStopped{}, nil
 			}
 		}
 	}, func(message types.Message, err error) {

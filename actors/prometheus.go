@@ -1,6 +1,7 @@
 package actors
 
 import (
+	"github.com/enjoypi/god/events"
 	"github.com/enjoypi/god/stdlib"
 	"github.com/enjoypi/god/types"
 	"github.com/spf13/viper"
@@ -14,7 +15,7 @@ type actorPrometheus struct {
 
 func (a *actorPrometheus) Initialize(v *viper.Viper) error {
 	_ = a.DefaultActor.Initialize()
-	a.RegisterReaction((*types.EvStart)(nil), a.onStart)
+	a.RegisterReaction((*events.EvStart)(nil), a.onStart)
 	return nil
 }
 

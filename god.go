@@ -4,6 +4,7 @@ import (
 	_ "github.com/enjoypi/god/actors"
 	_ "github.com/enjoypi/god/kernel"
 	"github.com/enjoypi/god/logger"
+	"github.com/enjoypi/god/settings"
 	"github.com/enjoypi/god/stdlib"
 	"github.com/spf13/viper"
 )
@@ -14,7 +15,7 @@ func Initialize(v *viper.Viper) error {
 		return err
 	}
 
-	var cfg Config
+	var cfg settings.Node
 	if err := viper.Unmarshal(&cfg); err != nil {
 		return err
 	}

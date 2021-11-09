@@ -1,6 +1,7 @@
 package kernel
 
 import (
+	"github.com/enjoypi/god/events"
 	"github.com/enjoypi/god/stdlib"
 	"github.com/enjoypi/god/types"
 	"github.com/spf13/viper"
@@ -51,7 +52,7 @@ func (k *kernel) Start(v *viper.Viper) error {
 		if err != nil {
 			return err
 		}
-		actor.Post(&types.EvStart{})
+		actor.Post(&events.EvStart{})
 	}
 	return nil
 }

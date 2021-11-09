@@ -3,7 +3,9 @@ package actors
 import (
 	"fmt"
 
+	"github.com/enjoypi/god/events"
 	"github.com/enjoypi/god/logger"
+	"github.com/enjoypi/god/settings"
 	"github.com/enjoypi/god/stdlib"
 	"github.com/enjoypi/god/types"
 	"github.com/nats-io/nats.go"
@@ -18,6 +20,8 @@ var conn *nats.Conn
 type actorNats struct {
 	stdlib.DefaultActor
 	nats.Options
+
+	config settings.Node
 	*viper.Viper
 }
 
@@ -26,12 +30,14 @@ func (a *actorNats) Initialize(v *viper.Viper) error {
 
 	type config struct {
 		Nats nats.Options
+		settings.Node
 	}
 	var cfg config
 
 	if err := v.Unmarshal(&cfg); err != nil {
 		return err
 	}
+	a.config = cfg.Node
 
 	a.Options = nats.GetDefaultOptions()
 	opts := &a.Options
@@ -43,8 +49,7 @@ func (a *actorNats) Initialize(v *viper.Viper) error {
 		zap.String("options", fmt.Sprintf("%+v", opts)))
 
 	a.RegisterReaction(error(nil), a.onError)
-	a.RegisterReaction((*types.EvStart)(nil), a.onStart)
-	a.RegisterReaction((*types.Subscription)(nil), a.onSubscribe)
+	a.RegisterReaction((*events.EvStart)(nil), a.onStart)
 	return nil
 }
 
@@ -64,23 +69,9 @@ func (a *actorNats) onStart(message types.Message) types.Message {
 	}
 	conn = nc
 	logger.L.Info("NATS connected", zap.String("url", conn.ConnectedUrl()))
-	a.Post(&types.Subscription{Subject: actorTypeNats})
-	return nil
-}
 
-func (a *actorNats) onSubscribe(message types.Message) types.Message {
-	subscription := message.(*types.Subscription)
-	if conn == nil {
-		return fmt.Errorf("no NATS connection")
-	}
-
-	handler :=
-		func(msg *nats.Msg) {
-			m := natsMsg2Message(msg)
-			logger.CheckError("handle NATS msg", Post2Actor(subscription.ActorID, m))
-		}
-	_, err := conn.Subscribe(subscription.Subject, handler)
-
+	subject := fmt.Sprintf("%d.*", a.config.ID)
+	_, err = conn.Subscribe(subject, a.onMsg)
 	if err != nil {
 		return err
 	}
@@ -90,6 +81,7 @@ func (a *actorNats) onSubscribe(message types.Message) types.Message {
 func (a *actorNats) onDisconnected(nc *nats.Conn, err error) {
 	conn = nil
 	logger.L.Warn("NATS disconnected", zap.Error(err), zap.String("url", nc.Opts.Url))
+	a.Post(events.EvBusDisconnected{})
 }
 
 func (a *actorNats) onReconnected(nc *nats.Conn) {
@@ -97,37 +89,24 @@ func (a *actorNats) onReconnected(nc *nats.Conn) {
 		conn = nc
 	}
 	logger.L.Info("NATS reconnected", zap.String("url", nc.ConnectedUrl()))
+	a.Post(events.EvBusReconnected{})
+}
+
+func (a *actorNats) onMsg(msg *nats.Msg) {
+	m := natsMsg2Message(msg)
+	var nodeID types.NodeID
+	var actorID types.ActorID
+	_, err := fmt.Sscanf(msg.Subject, "%d.%d", &nodeID, &actorID)
+	logger.CheckError("invalid NATS Msg", err)
+	logger.L.Debug("receive NATS Msg", zap.String("subject", msg.Subject), zap.Any("message", m))
 }
 
 func natsMsg2Message(msg *nats.Msg) types.Message {
 	return string(msg.Data)
 }
 
-func Post2Actor(id types.ActorID, message types.Message) error {
-	logger.L.Debug("post to actor", zap.Uint16("actor", id), zap.Any("message", message))
-	return nil
-}
-
-//func (a *Transport) Run() error {
-//	sub, err := a.Conn.SubscribeSync(">")
-//	if err != nil {
-//		return err
-//	}
-//
-//	for {
-//		msg, err := sub.NextMsg(time.Hour)
-//		if err != nil {
-//			break
-//		}
-//		a.PostEvent(msg)
-//	}
-//	return sub.Unsubscribe()
-//}
-
-func newActorNats() stdlib.Actor {
-	return &actorNats{}
-}
-
 func init() {
-	stdlib.RegisterActorCreator(actorTypeNats, newActorNats)
+	stdlib.RegisterActorCreator(actorTypeNats, func() stdlib.Actor {
+		return &actorNats{}
+	})
 }

@@ -3,7 +3,6 @@ package mesh
 import (
 	"time"
 
-	"github.com/enjoypi/god/services/net"
 	etcdclient "go.etcd.io/etcd/client/v3"
 	"google.golang.org/grpc"
 )
@@ -14,7 +13,7 @@ type Config struct {
 }
 
 type MeshConfig struct {
-	Net net.Config
+	Net tcp.Config
 
 	AdvertiseAddress string
 	DefaultTimeout   time.Duration // 未设置Timeout时默认超时

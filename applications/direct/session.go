@@ -1,4 +1,4 @@
-package net
+package direct
 
 //type Session struct {
 //	*zap.Logger

@@ -1,17 +1,17 @@
 package test
 
 import (
-	"github.com/enjoypi/god/stdlib"
+	"github.com/enjoypi/god/actors"
 	"github.com/enjoypi/god/types"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
 )
 
 type sampleActor struct {
-	stdlib.DefaultActor
+	actors.SimpleActor
 }
 
-var _ stdlib.Actor = (*sampleActor)(nil)
+var _ actors.Actor = (*sampleActor)(nil)
 var logger *zap.Logger
 
 func (s *sampleActor) Handle(message types.Message) error {
@@ -20,7 +20,7 @@ func (s *sampleActor) Handle(message types.Message) error {
 }
 
 func (s *sampleActor) Initialize(v *viper.Viper) error {
-	_ = s.DefaultActor.Initialize()
+	_ = s.SimpleActor.Initialize()
 	logger.Info("initialize")
 	return nil
 }
@@ -29,9 +29,9 @@ var sampleActorType = "sample"
 
 func init() {
 	logger, _ = zap.NewDevelopment()
-	stdlib.RegisterActorCreator(sampleActorType, newSampleActor)
+	actors.RegisterActorCreator(sampleActorType, newSampleActor)
 }
 
-func newSampleActor() stdlib.Actor {
+func newSampleActor() actors.Actor {
 	return &sampleActor{}
 }

@@ -16,3 +16,9 @@ func DecodeID(id FullID) (NodeID, ActorID) {
 func EncodeID(id NodeID, actorID ActorID) FullID {
 	return (FullID(id) << 16) | FullID(actorID)
 }
+
+const (
+	AIDEtcd = 1
+
+	AIDUser = 1000
+)

@@ -1,12 +1,12 @@
-package actors
+package implement
 
 import (
 	"fmt"
 
+	"github.com/enjoypi/god/actors"
 	"github.com/enjoypi/god/events"
 	"github.com/enjoypi/god/logger"
 	"github.com/enjoypi/god/settings"
-	"github.com/enjoypi/god/stdlib"
 	"github.com/enjoypi/god/types"
 	"github.com/nats-io/nats.go"
 	"github.com/spf13/viper"
@@ -18,7 +18,7 @@ const actorTypeNats = "nats"
 var conn *nats.Conn
 
 type actorNats struct {
-	stdlib.DefaultActor
+	actors.SimpleActor
 	nats.Options
 
 	config settings.Node
@@ -26,7 +26,7 @@ type actorNats struct {
 }
 
 func (a *actorNats) Initialize(v *viper.Viper) error {
-	_ = a.DefaultActor.Initialize()
+	_ = a.SimpleActor.Initialize()
 
 	type config struct {
 		Nats nats.Options
@@ -93,12 +93,17 @@ func (a *actorNats) onReconnected(nc *nats.Conn) {
 }
 
 func (a *actorNats) onMsg(msg *nats.Msg) {
-	m := natsMsg2Message(msg)
 	var nodeID types.NodeID
 	var actorID types.ActorID
-	_, err := fmt.Sscanf(msg.Subject, "%d.%d", &nodeID, &actorID)
-	logger.CheckError("invalid NATS Msg", err)
+	if _, err := fmt.Sscanf(msg.Subject, "%d.%d", &nodeID, &actorID); err != nil {
+		logger.L.Warn("invalid GOD Msg", zap.Error(err))
+		return
+	}
+	m := natsMsg2Message(msg)
+
 	logger.L.Debug("receive NATS Msg", zap.String("subject", msg.Subject), zap.Any("message", m))
+
+	actors.Post(0, actorID, m)
 }
 
 func natsMsg2Message(msg *nats.Msg) types.Message {
@@ -106,7 +111,7 @@ func natsMsg2Message(msg *nats.Msg) types.Message {
 }
 
 func init() {
-	stdlib.RegisterActorCreator(actorTypeNats, func() stdlib.Actor {
+	actors.RegisterActorCreator(actorTypeNats, func() actors.Actor {
 		return &actorNats{}
 	})
 }

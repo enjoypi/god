@@ -1,6 +1,7 @@
 package kernel
 
 import (
+	"github.com/enjoypi/god/actors"
 	"github.com/enjoypi/god/events"
 	"github.com/enjoypi/god/stdlib"
 	"github.com/enjoypi/god/types"
@@ -16,9 +17,9 @@ func init() {
 type kernel struct {
 	sup *stdlib.Supervisor
 
-	discovery stdlib.Actor
-	monitor   stdlib.Actor
-	messaging stdlib.Actor
+	discovery actors.Actor
+	monitor   actors.Actor
+	messaging actors.Actor
 }
 
 func newKernel(v *viper.Viper) (types.Application, error) {

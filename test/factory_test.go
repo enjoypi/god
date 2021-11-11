@@ -3,12 +3,12 @@ package test
 import (
 	"testing"
 
-	"github.com/enjoypi/god/stdlib"
+	"github.com/enjoypi/god/actors"
 	"github.com/stretchr/testify/require"
 )
 
 func TestActorFactory(t *testing.T) {
-	a := stdlib.NewActor(sampleActorType)
+	a := actors.NewActor(sampleActorType)
 	require.NotNil(t, a)
 	require.IsType(t, (*sampleActor)(nil), a)
 }

@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/enjoypi/god/actors"
 	"github.com/enjoypi/god/stdlib"
 	"github.com/stretchr/testify/require"
 )
@@ -18,7 +19,7 @@ func TestNewSupervisor(t *testing.T) {
 	go func() {
 		a.Post("word")
 		time.Sleep(time.Second)
-		stdlib.Close()
+		actors.Close()
 	}()
-	stdlib.Wait()
+	actors.Wait()
 }

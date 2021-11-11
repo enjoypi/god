@@ -1,8 +1,8 @@
-package actors
+package implement
 
 import (
+	"github.com/enjoypi/god/actors"
 	"github.com/enjoypi/god/events"
-	"github.com/enjoypi/god/stdlib"
 	"github.com/enjoypi/god/types"
 	"github.com/spf13/viper"
 )
@@ -10,11 +10,11 @@ import (
 const actorTypePrometheus = "prometheus"
 
 type actorPrometheus struct {
-	stdlib.DefaultActor
+	actors.SimpleActor
 }
 
 func (a *actorPrometheus) Initialize(v *viper.Viper) error {
-	_ = a.DefaultActor.Initialize()
+	_ = a.SimpleActor.Initialize()
 	a.RegisterReaction((*events.EvStart)(nil), a.onStart)
 	return nil
 }
@@ -22,10 +22,10 @@ func (a *actorPrometheus) Initialize(v *viper.Viper) error {
 func (a *actorPrometheus) onStart(message types.Message) types.Message {
 	return nil
 }
-func newPrometheus() stdlib.Actor {
+func newPrometheus() actors.Actor {
 	return &actorPrometheus{}
 }
 
 func init() {
-	stdlib.RegisterActorCreator(actorTypePrometheus, newPrometheus)
+	actors.RegisterActorCreator(actorTypePrometheus, newPrometheus)
 }

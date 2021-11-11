@@ -1,7 +1,8 @@
 package god
 
 import (
-	_ "github.com/enjoypi/god/actors"
+	"github.com/enjoypi/god/actors"
+	_ "github.com/enjoypi/god/actors/implement"
 	_ "github.com/enjoypi/god/applications/kernel"
 	"github.com/enjoypi/god/logger"
 	"github.com/enjoypi/god/settings"
@@ -28,5 +29,5 @@ func Initialize(v *viper.Viper) error {
 }
 
 func Wait() {
-	stdlib.Wait()
+	actors.Wait()
 }

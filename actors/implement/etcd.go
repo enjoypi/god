@@ -1,8 +1,8 @@
-package actors
+package implement
 
 import (
+	"github.com/enjoypi/god/actors"
 	"github.com/enjoypi/god/events"
-	"github.com/enjoypi/god/stdlib"
 	"github.com/enjoypi/god/types"
 	"github.com/spf13/viper"
 )
@@ -10,11 +10,11 @@ import (
 const actorTypeEtcd = "etcd"
 
 type actorEtcd struct {
-	stdlib.DefaultActor
+	actors.SimpleActor
 }
 
 func (a *actorEtcd) Initialize(v *viper.Viper) error {
-	_ = a.DefaultActor.Initialize()
+	_ = a.SimpleActor.Initialize()
 	a.RegisterReaction((*events.EvStart)(nil), a.onStart)
 	return nil
 }
@@ -23,10 +23,10 @@ func (a *actorEtcd) onStart(message types.Message) types.Message {
 	return nil
 }
 
-func newEtcd() stdlib.Actor {
+func newEtcd() actors.Actor {
 	return &actorEtcd{}
 }
 
 func init() {
-	stdlib.RegisterActorCreator(actorTypeEtcd, newEtcd)
+	actors.RegisterActorCreator(actorTypeEtcd, newEtcd)
 }

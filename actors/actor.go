@@ -1,4 +1,4 @@
-package stdlib
+package actors
 
 import (
 	"fmt"
@@ -24,7 +24,7 @@ type DefaultImplement interface {
 	ID() types.ActorID
 	Type() types.ActorType
 
-	messageQueue() types.MessageQueue
+	MessageQueue() types.MessageQueue
 	setID(id types.ActorID)
 	setType(actorType types.ActorType)
 
@@ -40,7 +40,7 @@ type Actor interface {
 }
 type ActorCreator func() Actor
 
-type DefaultActor struct {
+type SimpleActor struct {
 	actorType types.ActorType
 	id        types.ActorID
 	mq        types.MessageQueue
@@ -48,12 +48,12 @@ type DefaultActor struct {
 }
 
 // must be called by outer Initialize and ignore error
-func (a *DefaultActor) Initialize() error {
+func (a *SimpleActor) Initialize() error {
 	a.mq = make(types.MessageQueue, 1)
 	return fmt.Errorf("no Initialize implment")
 }
 
-func (a *DefaultActor) Handle(message types.Message) error {
+func (a *SimpleActor) Handle(message types.Message) error {
 	//if !ok {
 	//	logger.L.Warn("invalid reactor in actor",
 	//		zap.String("type", a.actorType),
@@ -70,17 +70,17 @@ func (a *DefaultActor) Handle(message types.Message) error {
 	return nil
 }
 
-func (a *DefaultActor) ID() types.ActorID {
+func (a *SimpleActor) ID() types.ActorID {
 	return a.id
 }
 
-func (a *DefaultActor) Type() types.ActorType {
+func (a *SimpleActor) Type() types.ActorType {
 	return a.actorType
 }
 
 // no any check for performance
 // Post will lock if the mq has not been initial
-func (a *DefaultActor) Post(message types.Message) {
+func (a *SimpleActor) Post(message types.Message) {
 	if ce := logger.L.Check(zapcore.DebugLevel, "POST"); ce != nil {
 		ce.Write(
 			zap.String("type", a.actorType),
@@ -90,18 +90,18 @@ func (a *DefaultActor) Post(message types.Message) {
 	a.mq <- message
 }
 
-func (a *DefaultActor) Terminate() {
+func (a *SimpleActor) Terminate() {
 
 }
 
-func (a *DefaultActor) messageQueue() types.MessageQueue {
+func (a *SimpleActor) MessageQueue() types.MessageQueue {
 	return a.mq
 }
 
-func (a *DefaultActor) setID(id types.ActorID) {
+func (a *SimpleActor) setID(id types.ActorID) {
 	a.id = id
 }
 
-func (a *DefaultActor) setType(actorType types.ActorType) {
+func (a *SimpleActor) setType(actorType types.ActorType) {
 	a.actorType = actorType
 }

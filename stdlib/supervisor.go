@@ -3,6 +3,7 @@ package stdlib
 import (
 	"fmt"
 
+	"github.com/enjoypi/god/actors"
 	"github.com/enjoypi/god/events"
 	"github.com/enjoypi/god/logger"
 	"github.com/enjoypi/god/types"
@@ -12,7 +13,8 @@ import (
 )
 
 type Supervisor struct {
-	DefaultActor
+	actors.SimpleActor
+	*actors.ActorManager
 }
 
 func NewSupervisor() (*Supervisor, error) {
@@ -20,12 +22,13 @@ func NewSupervisor() (*Supervisor, error) {
 	if err := sup.Initialize(); err != nil {
 		return nil, fmt.Errorf("fail to initialize supervisor")
 	}
+	sup.ActorManager = actors.NewActorManager()
 
 	return sup, nil
 }
 
 func (sup *Supervisor) Initialize() error {
-	_ = sup.DefaultActor.Initialize()
+	_ = sup.SimpleActor.Initialize()
 	return nil
 }
 
@@ -36,8 +39,8 @@ func (sup *Supervisor) Handle(message types.Message) types.Message {
 func (sup *Supervisor) HandleActor(actor types.ActorID, message types.Message) {
 
 }
-func (sup *Supervisor) Start(v *viper.Viper, actorType types.ActorType) (Actor, error) {
-	actor := NewActor(actorType)
+func (sup *Supervisor) Start(v *viper.Viper, actorType types.ActorType) (actors.Actor, error) {
+	actor := actors.NewActor(actorType)
 	if actor == nil {
 		return nil, fmt.Errorf("invalid actor type")
 	}
@@ -47,10 +50,10 @@ func (sup *Supervisor) Start(v *viper.Viper, actorType types.ActorType) (Actor, 
 		return nil, err
 	}
 
-	Go(func(exitChan ExitChan) (types.Message, error) {
+	actors.Go(func(exitChan actors.ExitChan) (types.Message, error) {
 		defer actor.Terminate()
 
-		mq := actor.messageQueue()
+		mq := actor.MessageQueue()
 
 		for {
 

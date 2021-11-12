@@ -2,6 +2,7 @@ package stdlib
 
 import (
 	"fmt"
+	"reflect"
 
 	"github.com/enjoypi/god/actors"
 	"github.com/enjoypi/god/events"
@@ -13,8 +14,7 @@ import (
 )
 
 type Supervisor struct {
-	actors.SimpleActor
-	*actors.Manager
+	//actors.SimpleActor
 }
 
 func NewSupervisor() (*Supervisor, error) {
@@ -22,13 +22,11 @@ func NewSupervisor() (*Supervisor, error) {
 	if err := sup.Initialize(); err != nil {
 		return nil, fmt.Errorf("fail to initialize supervisor")
 	}
-	sup.Manager = actors.NewManager()
 
 	return sup, nil
 }
 
 func (sup *Supervisor) Initialize() error {
-	_ = sup.SimpleActor.Initialize()
 	return nil
 }
 
@@ -39,8 +37,8 @@ func (sup *Supervisor) Handle(message types.Message) types.Message {
 func (sup *Supervisor) HandleActor(actor types.ActorID, message types.Message) {
 
 }
-func (sup *Supervisor) Start(v *viper.Viper, actorType types.ActorType) (actors.Actor, error) {
-	actor := actors.NewActor(actorType)
+func (sup *Supervisor) Start(v *viper.Viper, actorType types.ActorType, actorID types.ActorID) (actors.Actor, error) {
+	actor := actors.NewActor(actorType, actorID)
 	if actor == nil {
 		return nil, fmt.Errorf("invalid actor type")
 	}
@@ -58,14 +56,14 @@ func (sup *Supervisor) Start(v *viper.Viper, actorType types.ActorType) (actors.
 		for {
 
 			select {
-			case msg := <-mq:
+			case message := <-mq:
 				if ce := logger.L.Check(zapcore.DebugLevel, "RECV"); ce != nil {
 					ce.Write(
-						zap.String("type", actorType),
-						zap.String("actor", fmt.Sprintf("%p", actor)),
-						zap.Any("message", msg))
+						zap.String("type", actorType.String()),
+						zap.Uint32("actor", actor.ID()),
+						zap.Any("message", reflect.TypeOf(message)))
 				}
-				if err := actor.Handle(msg); err != nil {
+				if err := actor.Handle(message); err != nil {
 					logger.L.Warn("handle wrong", zap.Error(err))
 				}
 			case <-exitChan:

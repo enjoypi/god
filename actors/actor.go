@@ -2,6 +2,7 @@ package actors
 
 import (
 	"fmt"
+	"reflect"
 
 	"github.com/enjoypi/god/logger"
 	"github.com/enjoypi/god/types"
@@ -83,9 +84,9 @@ func (a *SimpleActor) Type() types.ActorType {
 func (a *SimpleActor) Post(message types.Message) {
 	if ce := logger.L.Check(zapcore.DebugLevel, "POST"); ce != nil {
 		ce.Write(
-			zap.String("type", a.actorType),
-			zap.String("actor", fmt.Sprintf("%p", a)),
-			zap.Any("message", message))
+			zap.String("type", a.actorType.String()),
+			zap.Uint32("actor", a.id),
+			zap.Any("message", reflect.TypeOf(message)))
 	}
 	a.mq <- message
 }

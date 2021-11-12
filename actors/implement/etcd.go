@@ -7,8 +7,6 @@ import (
 	"github.com/spf13/viper"
 )
 
-const actorTypeEtcd = "etcd"
-
 type actorEtcd struct {
 	actors.SimpleActor
 }
@@ -28,5 +26,5 @@ func newEtcd() actors.Actor {
 }
 
 func init() {
-	actors.RegisterActorCreator(actorTypeEtcd, newEtcd)
+	actors.RegisterActorCreator(types.ATEtcd, newEtcd)
 }

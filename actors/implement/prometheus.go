@@ -27,5 +27,5 @@ func newPrometheus() actors.Actor {
 }
 
 func init() {
-	actors.RegisterActorCreator(actorTypePrometheus, newPrometheus)
+	actors.RegisterActorCreator(types.ATPrometheus, newPrometheus)
 }

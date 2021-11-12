@@ -47,9 +47,8 @@ func (k *kernel) Start(v *viper.Viper) error {
 		return err
 	}
 
-	cfg.ActorType = []string{"etcd", "nats", "prometheus"}
-	for _, actorType := range cfg.ActorType {
-		actor, err := k.sup.Start(v, actorType)
+	for _, def := range types.KernelActors {
+		actor, err := k.sup.Start(v, def.Type, def.ID)
 		if err != nil {
 			return err
 		}

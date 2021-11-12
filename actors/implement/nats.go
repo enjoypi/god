@@ -47,6 +47,7 @@ func (a *actorNats) Initialize(v *viper.Viper) error {
 	opts.ReconnectedCB = a.onReconnected
 
 	logger.L.Info("initialize NATS",
+		zap.Uint32("actor", a.ID()),
 		zap.String("options", fmt.Sprintf("%+v", opts)))
 
 	a.RegisterReaction(error(nil), a.onError)
@@ -118,7 +119,7 @@ func natsMsg2Message(msg *nats.Msg) types.Message {
 }
 
 func init() {
-	actors.RegisterActorCreator(actorTypeNats, func() actors.Actor {
+	actors.RegisterActorCreator(types.ATNats, func() actors.Actor {
 		return &actorNats{}
 	})
 }

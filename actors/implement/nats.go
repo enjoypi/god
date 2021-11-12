@@ -7,6 +7,7 @@ import (
 	"github.com/enjoypi/god/events"
 	"github.com/enjoypi/god/logger"
 	"github.com/enjoypi/god/settings"
+	"github.com/enjoypi/god/stdlib"
 	"github.com/enjoypi/god/types"
 	"github.com/nats-io/nats.go"
 	"github.com/spf13/viper"
@@ -79,31 +80,37 @@ func (a *actorNats) onStart(message types.Message) types.Message {
 }
 
 func (a *actorNats) onDisconnected(nc *nats.Conn, err error) {
-	conn = nil
-	logger.L.Warn("NATS disconnected", zap.Error(err), zap.String("url", nc.Opts.Url))
-	a.Post(events.EvBusDisconnected{})
+	stdlib.Catch(func() {
+		conn = nil
+		logger.L.Warn("NATS disconnected", zap.Error(err), zap.String("url", nc.Opts.Url))
+		a.Post(events.EvBusDisconnected{})
+	})
 }
 
 func (a *actorNats) onReconnected(nc *nats.Conn) {
-	if conn != nc {
-		conn = nc
-	}
-	logger.L.Info("NATS reconnected", zap.String("url", nc.ConnectedUrl()))
-	a.Post(events.EvBusReconnected{})
+	stdlib.Catch(func() {
+		if conn != nc {
+			conn = nc
+		}
+		logger.L.Info("NATS reconnected", zap.String("url", nc.ConnectedUrl()))
+		a.Post(events.EvBusReconnected{})
+	})
 }
 
 func (a *actorNats) onMsg(msg *nats.Msg) {
-	var nodeID types.NodeID
-	var actorID types.ActorID
-	if _, err := fmt.Sscanf(msg.Subject, "%d.%d", &nodeID, &actorID); err != nil {
-		logger.L.Warn("invalid GOD Msg", zap.Error(err))
-		return
-	}
-	m := natsMsg2Message(msg)
+	stdlib.Catch(func() {
+		var nodeID types.NodeID
+		var actorID types.ActorID
+		if _, err := fmt.Sscanf(msg.Subject, "%d.%d", &nodeID, &actorID); err != nil {
+			logger.L.Warn("invalid GOD Msg", zap.Error(err))
+			return
+		}
+		m := natsMsg2Message(msg)
 
-	logger.L.Debug("receive NATS Msg", zap.String("subject", msg.Subject), zap.Any("message", m))
+		logger.L.Debug("receive NATS Msg", zap.String("subject", msg.Subject), zap.Any("message", m))
 
-	actors.Post(actorID, m)
+		actors.Post(actorID, m)
+	})
 }
 
 func natsMsg2Message(msg *nats.Msg) types.Message {

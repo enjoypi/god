@@ -14,8 +14,6 @@ import (
 	"go.uber.org/zap"
 )
 
-const actorTypeNats = "nats"
-
 var conn *nats.Conn
 
 type actorNats struct {
@@ -51,6 +49,7 @@ func (a *actorNats) Initialize(v *viper.Viper) error {
 		zap.String("options", fmt.Sprintf("%+v", opts)))
 
 	a.RegisterReaction(error(nil), a.onError)
+	a.RegisterReaction("", a.onString)
 	a.RegisterReaction((*events.EvStart)(nil), a.onStart)
 	return nil
 }
@@ -77,6 +76,11 @@ func (a *actorNats) onStart(message def.Message) def.Message {
 	if err != nil {
 		return err
 	}
+	return nil
+}
+
+func (a *actorNats) onString(message def.Message) def.Message {
+	logger.L.Debug("on string", zap.String("message", message.(string)))
 	return nil
 }
 

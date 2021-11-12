@@ -2,14 +2,10 @@ package actors
 
 import (
 	"fmt"
-	"reflect"
 
 	"github.com/enjoypi/god/def"
-	"github.com/enjoypi/god/logger"
 	sc "github.com/enjoypi/gostatechart"
 	"github.com/spf13/viper"
-	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
 )
 
 type Handler interface {
@@ -82,12 +78,12 @@ func (a *SimpleActor) Type() def.ActorType {
 // no any check for performance
 // Post will lock if the mq has not been initial
 func (a *SimpleActor) Post(message def.Message) {
-	if ce := logger.L.Check(zapcore.DebugLevel, "POST"); ce != nil {
-		ce.Write(
-			zap.String("type", a.actorType.String()),
-			zap.Uint32("actor", a.id),
-			zap.Any("message", reflect.TypeOf(message)))
-	}
+	//if ce := logger.L.Check(zapcore.DebugLevel, "POST"); ce != nil {
+	//	ce.Write(
+	//		zap.String("type", a.actorType.String()),
+	//		zap.Uint32("actor", a.id),
+	//		zap.Any("message", sc.TypeOf(message)))
+	//}
 	a.mq <- message
 }
 

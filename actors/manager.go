@@ -4,6 +4,9 @@ import (
 	"sync"
 
 	"github.com/enjoypi/god/def"
+	"github.com/enjoypi/god/logger"
+	"go.uber.org/atomic"
+	"go.uber.org/zap"
 )
 
 type ExitChan chan int
@@ -18,10 +21,12 @@ type Manager struct {
 
 var (
 	defaultManager *Manager
+	defaultActorID atomic.Uint32
 )
 
 func init() {
 	defaultManager = NewManager()
+	defaultActorID.Store(uint32(def.ATUser))
 }
 
 func NewManager() *Manager {
@@ -50,6 +55,21 @@ func (m *Manager) Go(run GoRun, onRet OnReturn) {
 	}()
 }
 
+func (m *Manager) NewActor(actorType def.ActorType, id def.ActorID) Actor {
+	actor := defaultFactory.NewActor(actorType, id)
+	if actor == nil {
+		return nil
+	}
+
+	if _, loaded := m.actors.LoadOrStore(id, actor); loaded {
+		logger.L.Warn("exists actor",
+			zap.String("type", actorType.String()),
+			zap.Uint32("id", id),
+		)
+	}
+	return actor
+}
+
 func (m *Manager) Post(receiver def.ActorID, message def.Message) {
 	actor := m.Get(receiver)
 	if actor != nil {
@@ -68,6 +88,13 @@ func Close() {
 
 func Go(run GoRun, onRet OnReturn) {
 	defaultManager.Go(run, onRet)
+}
+
+func NewActor(actorType def.ActorType, id def.ActorID) Actor {
+	if id == 0 {
+		id = defaultActorID.Inc()
+	}
+	return defaultManager.NewActor(actorType, id)
 }
 
 func Post(receiver def.ActorID, message def.Message) {

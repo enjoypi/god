@@ -2,12 +2,12 @@ package stdlib
 
 import (
 	"fmt"
-	"reflect"
 
 	"github.com/enjoypi/god/actors"
 	"github.com/enjoypi/god/def"
 	"github.com/enjoypi/god/events"
 	"github.com/enjoypi/god/logger"
+	sc "github.com/enjoypi/gostatechart"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -61,7 +61,7 @@ func (sup *Supervisor) Start(v *viper.Viper, actorType def.ActorType, actorID de
 					ce.Write(
 						zap.String("type", actorType.String()),
 						zap.Uint32("actor", actor.ID()),
-						zap.Any("message", reflect.TypeOf(message)))
+						zap.Any("message", sc.TypeOf(message)))
 				}
 				if err := actor.Handle(message); err != nil {
 					logger.L.Warn("handle wrong", zap.Error(err))

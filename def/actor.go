@@ -9,6 +9,12 @@ type MessageQueue chan Message
 type NodeID = uint16
 type FullID = uint64
 
+type Reply struct {
+	sender   ActorID
+	receiver ActorID
+	Message
+}
+
 func DecodeID(id FullID) (NodeID, ActorID) {
 	return NodeID(id >> 32), ActorID(id)
 }
@@ -25,14 +31,14 @@ func (at ActorType) String() string {
 }
 
 const (
-	ATEtcd       ActorType = 1
-	ATNats       ActorType = 2
+	ATNats       ActorType = 1
+	ATEtcd       ActorType = 2
 	ATPrometheus ActorType = 3
 
 	ATUser ActorType = 1000
 )
 
-var actorTypeName = [...]string{"etcd", "NATS", "Prometheus"}
+var actorTypeName = [...]string{"NATS", "etcd", "Prometheus"}
 
 // KernelActors
 //It use actor type as actor ID because of only one actor each type

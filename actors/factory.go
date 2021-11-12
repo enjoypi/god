@@ -3,7 +3,6 @@ package actors
 import (
 	"github.com/enjoypi/god/def"
 	"github.com/enjoypi/god/logger"
-	"go.uber.org/atomic"
 	"go.uber.org/zap"
 )
 
@@ -13,11 +12,6 @@ type factory struct {
 }
 
 var defaultFactory = newFactory()
-var defaultActorID atomic.Uint32
-
-func init() {
-	defaultActorID.Store(uint32(def.ATUser))
-}
 
 func newFactory() *factory {
 	return &factory{creators: make(map[def.ActorType]ActorCreator)}
@@ -47,11 +41,4 @@ func (am *factory) NewActor(actorType def.ActorType, id def.ActorID) Actor {
 
 func RegisterActorCreator(actorType def.ActorType, creator ActorCreator) bool {
 	return defaultFactory.RegisterCreator(actorType, creator)
-}
-
-func NewActor(actorType def.ActorType, id def.ActorID) Actor {
-	if id == 0 {
-		id = defaultActorID.Inc()
-	}
-	return defaultFactory.NewActor(actorType, id)
 }

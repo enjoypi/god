@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"reflect"
 
+	"github.com/enjoypi/god/def"
 	"github.com/enjoypi/god/logger"
-	"github.com/enjoypi/god/types"
 	sc "github.com/enjoypi/gostatechart"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
@@ -13,21 +13,21 @@ import (
 )
 
 type Handler interface {
-	Handle(message types.Message) error // will be called in actor's goroutine
+	Handle(message def.Message) error // will be called in actor's goroutine
 }
 
 type Receiver interface {
-	Post(message types.Message) // post message to actor's message queue, must thread safe
+	Post(message def.Message) // post message to actor's message queue, must thread safe
 }
 
-type handle func(message types.Message) types.Message // will be called in actor's goroutine
+type handle func(message def.Message) def.Message // will be called in actor's goroutine
 type DefaultImplement interface {
-	ID() types.ActorID
-	Type() types.ActorType
+	ID() def.ActorID
+	Type() def.ActorType
 
-	MessageQueue() types.MessageQueue
-	setID(id types.ActorID)
-	setType(actorType types.ActorType)
+	MessageQueue() def.MessageQueue
+	setID(id def.ActorID)
+	setType(actorType def.ActorType)
 
 	Handler
 	Receiver
@@ -42,19 +42,19 @@ type Actor interface {
 type ActorCreator func() Actor
 
 type SimpleActor struct {
-	actorType types.ActorType
-	id        types.ActorID
-	mq        types.MessageQueue
+	actorType def.ActorType
+	id        def.ActorID
+	mq        def.MessageQueue
 	sc.SimpleState
 }
 
 // must be called by outer Initialize and ignore error
 func (a *SimpleActor) Initialize() error {
-	a.mq = make(types.MessageQueue, 1)
+	a.mq = make(def.MessageQueue, 1)
 	return fmt.Errorf("no Initialize implment")
 }
 
-func (a *SimpleActor) Handle(message types.Message) error {
+func (a *SimpleActor) Handle(message def.Message) error {
 	//if !ok {
 	//	logger.L.Warn("invalid reactor in actor",
 	//		zap.String("type", a.actorType),
@@ -71,17 +71,17 @@ func (a *SimpleActor) Handle(message types.Message) error {
 	return nil
 }
 
-func (a *SimpleActor) ID() types.ActorID {
+func (a *SimpleActor) ID() def.ActorID {
 	return a.id
 }
 
-func (a *SimpleActor) Type() types.ActorType {
+func (a *SimpleActor) Type() def.ActorType {
 	return a.actorType
 }
 
 // no any check for performance
 // Post will lock if the mq has not been initial
-func (a *SimpleActor) Post(message types.Message) {
+func (a *SimpleActor) Post(message def.Message) {
 	if ce := logger.L.Check(zapcore.DebugLevel, "POST"); ce != nil {
 		ce.Write(
 			zap.String("type", a.actorType.String()),
@@ -95,14 +95,14 @@ func (a *SimpleActor) Terminate() {
 
 }
 
-func (a *SimpleActor) MessageQueue() types.MessageQueue {
+func (a *SimpleActor) MessageQueue() def.MessageQueue {
 	return a.mq
 }
 
-func (a *SimpleActor) setID(id types.ActorID) {
+func (a *SimpleActor) setID(id def.ActorID) {
 	a.id = id
 }
 
-func (a *SimpleActor) setType(actorType types.ActorType) {
+func (a *SimpleActor) setType(actorType def.ActorType) {
 	a.actorType = actorType
 }

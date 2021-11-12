@@ -2,8 +2,8 @@ package implement
 
 import (
 	"github.com/enjoypi/god/actors"
+	"github.com/enjoypi/god/def"
 	"github.com/enjoypi/god/events"
-	"github.com/enjoypi/god/types"
 	"github.com/spf13/viper"
 )
 
@@ -19,7 +19,7 @@ func (a *actorPrometheus) Initialize(v *viper.Viper) error {
 	return nil
 }
 
-func (a *actorPrometheus) onStart(message types.Message) types.Message {
+func (a *actorPrometheus) onStart(message def.Message) def.Message {
 	return nil
 }
 func newPrometheus() actors.Actor {
@@ -27,5 +27,5 @@ func newPrometheus() actors.Actor {
 }
 
 func init() {
-	actors.RegisterActorCreator(types.ATPrometheus, newPrometheus)
+	actors.RegisterActorCreator(def.ATPrometheus, newPrometheus)
 }

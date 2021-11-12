@@ -1,9 +1,9 @@
 package settings
 
-import "github.com/enjoypi/god/types"
+import "github.com/enjoypi/god/def"
 
 type Node struct {
 	Type string
-	ID   types.NodeID
+	ID   def.NodeID
 	Apps []string
 }

@@ -1,18 +1,18 @@
 package stdlib
 
 import (
-	"github.com/enjoypi/god/types"
+	"github.com/enjoypi/god/def"
 	"github.com/spf13/viper"
 )
 
 var (
-	applicationFactory map[string]types.NewApplication
-	applications       []types.Application
+	applicationFactory map[string]def.NewApplication
+	applications       []def.Application
 )
 
 func init() {
-	applicationFactory = make(map[string]types.NewApplication)
-	applications = make([]types.Application, 0)
+	applicationFactory = make(map[string]def.NewApplication)
+	applications = make([]def.Application, 0)
 }
 
 func StartApplications(v *viper.Viper, apps []string) error {
@@ -50,6 +50,6 @@ func StartApplication(v *viper.Viper, name string) error {
 	return nil
 }
 
-func RegisterApplication(name string, creator types.NewApplication) {
+func RegisterApplication(name string, creator def.NewApplication) {
 	applicationFactory[name] = creator
 }

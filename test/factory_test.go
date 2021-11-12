@@ -8,7 +8,7 @@ import (
 )
 
 func TestActorFactory(t *testing.T) {
-	a := actors.NewActor(sampleActorType)
+	a := actors.NewActor(sampleActorType, 0)
 	require.NotNil(t, a)
 	require.IsType(t, (*sampleActor)(nil), a)
 }

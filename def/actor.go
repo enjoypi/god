@@ -1,4 +1,4 @@
-package types
+package def
 
 import "github.com/enjoypi/gostatechart"
 
@@ -10,23 +10,26 @@ type NodeID = uint16
 type FullID = uint64
 
 func DecodeID(id FullID) (NodeID, ActorID) {
-	return NodeID(id >> 16), ActorID(id)
+	return NodeID(id >> 32), ActorID(id)
 }
 
 func EncodeID(id NodeID, actorID ActorID) FullID {
-	return (FullID(id) << 16) | FullID(actorID)
+	return (FullID(id) << 32) | FullID(actorID)
 }
 
 func (at ActorType) String() string {
+	if at >= ATUser {
+		return "User"
+	}
 	return actorTypeName[at-1]
 }
 
 const (
-	ATEtcd       = 1
-	ATNats       = 2
-	ATPrometheus = 3
+	ATEtcd       ActorType = 1
+	ATNats       ActorType = 2
+	ATPrometheus ActorType = 3
 
-	ATUser = 1000
+	ATUser ActorType = 1000
 )
 
 var actorTypeName = [...]string{"etcd", "NATS", "Prometheus"}
@@ -37,7 +40,7 @@ var KernelActors = []struct {
 	Type ActorType
 	ID   ActorID
 }{
-	{ATEtcd, ATEtcd},
-	{ATNats, ATNats},
-	{ATPrometheus, ATPrometheus},
+	{ATEtcd, ActorID(ATEtcd)},
+	{ATNats, ActorID(ATNats)},
+	{ATPrometheus, ActorID(ATPrometheus)},
 }

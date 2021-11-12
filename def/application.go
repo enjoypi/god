@@ -1,4 +1,4 @@
-package types
+package def
 
 import "github.com/spf13/viper"
 

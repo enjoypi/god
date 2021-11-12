@@ -4,11 +4,11 @@ import (
 	"fmt"
 
 	"github.com/enjoypi/god/actors"
+	"github.com/enjoypi/god/def"
 	"github.com/enjoypi/god/events"
 	"github.com/enjoypi/god/logger"
 	"github.com/enjoypi/god/settings"
 	"github.com/enjoypi/god/stdlib"
-	"github.com/enjoypi/god/types"
 	"github.com/nats-io/nats.go"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
@@ -55,12 +55,12 @@ func (a *actorNats) Initialize(v *viper.Viper) error {
 	return nil
 }
 
-func (a *actorNats) onError(message types.Message) types.Message {
+func (a *actorNats) onError(message def.Message) def.Message {
 	logger.L.Error("error message", zap.Error(message.(error)))
 	return nil
 }
 
-func (a *actorNats) onStart(message types.Message) types.Message {
+func (a *actorNats) onStart(message def.Message) def.Message {
 	opts := a.Options
 	nc, err := opts.Connect()
 	if err != nil {
@@ -100,8 +100,8 @@ func (a *actorNats) onReconnected(nc *nats.Conn) {
 
 func (a *actorNats) onMsg(msg *nats.Msg) {
 	stdlib.Catch(func() {
-		var nodeID types.NodeID
-		var actorID types.ActorID
+		var nodeID def.NodeID
+		var actorID def.ActorID
 		if _, err := fmt.Sscanf(msg.Subject, "%d.%d", &nodeID, &actorID); err != nil {
 			logger.L.Warn("invalid GOD Msg", zap.Error(err))
 			return
@@ -114,12 +114,12 @@ func (a *actorNats) onMsg(msg *nats.Msg) {
 	})
 }
 
-func natsMsg2Message(msg *nats.Msg) types.Message {
+func natsMsg2Message(msg *nats.Msg) def.Message {
 	return string(msg.Data)
 }
 
 func init() {
-	actors.RegisterActorCreator(types.ATNats, func() actors.Actor {
+	actors.RegisterActorCreator(def.ATNats, func() actors.Actor {
 		return &actorNats{}
 	})
 }

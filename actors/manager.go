@@ -3,12 +3,12 @@ package actors
 import (
 	"sync"
 
-	"github.com/enjoypi/god/types"
+	"github.com/enjoypi/god/def"
 )
 
 type ExitChan chan int
-type GoRun func(ExitChan) (types.Message, error)
-type OnReturn func(types.Message, error)
+type GoRun func(ExitChan) (def.Message, error)
+type OnReturn func(def.Message, error)
 
 type Manager struct {
 	actors sync.Map
@@ -34,7 +34,7 @@ func (m *Manager) Close() {
 	close(m.ExitChan)
 }
 
-func (m *Manager) Get(id types.ActorID) Actor {
+func (m *Manager) Get(id def.ActorID) Actor {
 	i, _ := m.actors.Load(id)
 	return i.(Actor)
 }
@@ -50,7 +50,7 @@ func (m *Manager) Go(run GoRun, onRet OnReturn) {
 	}()
 }
 
-func (m *Manager) Post(receiver types.ActorID, message types.Message) {
+func (m *Manager) Post(receiver def.ActorID, message def.Message) {
 	actor := m.Get(receiver)
 	if actor != nil {
 		actor.Post(message)
@@ -70,7 +70,7 @@ func Go(run GoRun, onRet OnReturn) {
 	defaultManager.Go(run, onRet)
 }
 
-func Post(receiver types.ActorID, message types.Message) {
+func Post(receiver def.ActorID, message def.Message) {
 	defaultManager.Post(receiver, message)
 }
 

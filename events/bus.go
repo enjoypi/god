@@ -1,6 +1,6 @@
 package events
 
-import "github.com/enjoypi/god/types"
+import "github.com/enjoypi/god/def"
 
 type EvBusConnected struct {
 }
@@ -12,6 +12,6 @@ type EvBusReconnected struct {
 }
 
 type Subscription struct {
-	types.ActorID
+	def.ActorID
 	Subject string
 }

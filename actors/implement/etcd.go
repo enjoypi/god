@@ -2,8 +2,8 @@ package implement
 
 import (
 	"github.com/enjoypi/god/actors"
+	"github.com/enjoypi/god/def"
 	"github.com/enjoypi/god/events"
-	"github.com/enjoypi/god/types"
 	"github.com/spf13/viper"
 )
 
@@ -17,7 +17,7 @@ func (a *actorEtcd) Initialize(v *viper.Viper) error {
 	return nil
 }
 
-func (a *actorEtcd) onStart(message types.Message) types.Message {
+func (a *actorEtcd) onStart(message def.Message) def.Message {
 	return nil
 }
 
@@ -26,5 +26,5 @@ func newEtcd() actors.Actor {
 }
 
 func init() {
-	actors.RegisterActorCreator(types.ATEtcd, newEtcd)
+	actors.RegisterActorCreator(def.ATEtcd, newEtcd)
 }

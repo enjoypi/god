@@ -1,7 +1,7 @@
 package kernel
 
-import "github.com/enjoypi/god/types"
+import "github.com/enjoypi/god/def"
 
 type Config struct {
-	ActorType []types.ActorType
+	ActorType []def.ActorType
 }

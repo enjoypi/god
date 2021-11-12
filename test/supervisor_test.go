@@ -13,7 +13,7 @@ func TestNewSupervisor(t *testing.T) {
 	sup, _ := stdlib.NewSupervisor()
 	require.NotNil(t, sup)
 
-	a, _ := sup.Start(nil, sampleActorType)
+	a, _ := sup.Start(nil, sampleActorType, 0)
 	require.NotNil(t, a)
 	a.Post("hello")
 	go func() {

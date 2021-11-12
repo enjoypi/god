@@ -2,9 +2,9 @@ package kernel
 
 import (
 	"github.com/enjoypi/god/actors"
+	"github.com/enjoypi/god/def"
 	"github.com/enjoypi/god/events"
 	"github.com/enjoypi/god/stdlib"
-	"github.com/enjoypi/god/types"
 	"github.com/spf13/viper"
 )
 
@@ -22,7 +22,7 @@ type kernel struct {
 	messaging actors.Actor
 }
 
-func newKernel(v *viper.Viper) (types.Application, error) {
+func newKernel(v *viper.Viper) (def.Application, error) {
 	sup, err := stdlib.NewSupervisor()
 	if err != nil {
 		return nil, err
@@ -47,7 +47,7 @@ func (k *kernel) Start(v *viper.Viper) error {
 		return err
 	}
 
-	for _, def := range types.KernelActors {
+	for _, def := range def.KernelActors {
 		actor, err := k.sup.Start(v, def.Type, def.ID)
 		if err != nil {
 			return err

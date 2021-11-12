@@ -5,9 +5,9 @@ import (
 	"reflect"
 
 	"github.com/enjoypi/god/actors"
+	"github.com/enjoypi/god/def"
 	"github.com/enjoypi/god/events"
 	"github.com/enjoypi/god/logger"
-	"github.com/enjoypi/god/types"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -30,14 +30,14 @@ func (sup *Supervisor) Initialize() error {
 	return nil
 }
 
-func (sup *Supervisor) Handle(message types.Message) types.Message {
+func (sup *Supervisor) Handle(message def.Message) def.Message {
 	return nil
 }
 
-func (sup *Supervisor) HandleActor(actor types.ActorID, message types.Message) {
+func (sup *Supervisor) HandleActor(actor def.ActorID, message def.Message) {
 
 }
-func (sup *Supervisor) Start(v *viper.Viper, actorType types.ActorType, actorID types.ActorID) (actors.Actor, error) {
+func (sup *Supervisor) Start(v *viper.Viper, actorType def.ActorType, actorID def.ActorID) (actors.Actor, error) {
 	actor := actors.NewActor(actorType, actorID)
 	if actor == nil {
 		return nil, fmt.Errorf("invalid actor type")
@@ -48,7 +48,7 @@ func (sup *Supervisor) Start(v *viper.Viper, actorType types.ActorType, actorID 
 		return nil, err
 	}
 
-	actors.Go(func(exitChan actors.ExitChan) (types.Message, error) {
+	actors.Go(func(exitChan actors.ExitChan) (def.Message, error) {
 		defer actor.Terminate()
 
 		mq := actor.MessageQueue()
@@ -70,7 +70,7 @@ func (sup *Supervisor) Start(v *viper.Viper, actorType types.ActorType, actorID 
 				return &events.EvStopped{}, nil
 			}
 		}
-	}, func(message types.Message, err error) {
+	}, func(message def.Message, err error) {
 		sup.HandleActor(actor.ID(), message)
 	})
 

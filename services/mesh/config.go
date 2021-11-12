@@ -13,8 +13,6 @@ type Config struct {
 }
 
 type MeshConfig struct {
-	Net tcp.Config
-
 	AdvertiseAddress string
 	DefaultTimeout   time.Duration // 未设置Timeout时默认超时
 	GrantTTL         int64

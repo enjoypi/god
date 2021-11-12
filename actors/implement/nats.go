@@ -103,7 +103,7 @@ func (a *actorNats) onMsg(msg *nats.Msg) {
 
 	logger.L.Debug("receive NATS Msg", zap.String("subject", msg.Subject), zap.Any("message", m))
 
-	actors.Post(0, actorID, m)
+	actors.Post(actorID, m)
 }
 
 func natsMsg2Message(msg *nats.Msg) types.Message {

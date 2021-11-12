@@ -14,7 +14,7 @@ import (
 
 type Supervisor struct {
 	actors.SimpleActor
-	*actors.ActorManager
+	*actors.Manager
 }
 
 func NewSupervisor() (*Supervisor, error) {
@@ -22,7 +22,7 @@ func NewSupervisor() (*Supervisor, error) {
 	if err := sup.Initialize(); err != nil {
 		return nil, fmt.Errorf("fail to initialize supervisor")
 	}
-	sup.ActorManager = actors.NewActorManager()
+	sup.Manager = actors.NewManager()
 
 	return sup, nil
 }

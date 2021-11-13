@@ -27,24 +27,41 @@ func (at ActorType) String() string {
 	if at >= ATUser {
 		return "User"
 	}
-	return actorTypeName[at-1]
+	return actorTypeName[at]
+}
+
+func String2Type(name string) ActorType {
+	if t, ok := nameTypeMap[name]; ok {
+		return t
+	}
+	return ATUser
 }
 
 const (
-	ATNats       ActorType = 1
-	ATEtcd       ActorType = 2
-	ATPrometheus ActorType = 3
+	ATSample      ActorType = 0
+	ATNats        ActorType = 1
+	ATEtcd        ActorType = 2
+	ATPrometheus  ActorType = 3
+	ATTCPListener           = 4
 
 	ATUser ActorType = 1000
 )
 
-var actorTypeName = [...]string{"NATS", "etcd", "Prometheus"}
+var actorTypeName = [...]string{"sample", "NATS", "etcd", "Prometheus", "TCPListener"}
+
+var nameTypeMap = make(map[string]ActorType)
+
+func init() {
+	for i, name := range actorTypeName {
+		nameTypeMap[name] = ActorType(i)
+	}
+}
 
 // KernelActors
 //It use actor type as actor ID because of only one actor each type
 var KernelActors = []struct {
-	Type ActorType
-	ID   ActorID
+	ActorType
+	ActorID
 }{
 	{ATEtcd, ActorID(ATEtcd)},
 	{ATNats, ActorID(ATNats)},

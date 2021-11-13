@@ -1,7 +1,6 @@
 package kernel
 
 import (
-	"github.com/enjoypi/god/actors"
 	"github.com/enjoypi/god/def"
 	"github.com/enjoypi/god/events"
 	"github.com/enjoypi/god/stdlib"
@@ -16,10 +15,6 @@ func init() {
 
 type kernel struct {
 	sup *stdlib.Supervisor
-
-	discovery actors.Actor
-	monitor   actors.Actor
-	messaging actors.Actor
 }
 
 func newKernel(v *viper.Viper) (def.Application, error) {
@@ -42,13 +37,8 @@ func (k *kernel) Name() string {
 }
 
 func (k *kernel) Start(v *viper.Viper) error {
-	var cfg Config
-	if err := v.Unmarshal(&cfg); err != nil {
-		return err
-	}
-
-	for _, def := range def.KernelActors {
-		actor, err := k.sup.Start(v, def.Type, def.ID)
+	for _, a := range def.KernelActors {
+		actor, err := k.sup.Start(v, a.ActorType, a.ActorID)
 		if err != nil {
 			return err
 		}

@@ -2,7 +2,7 @@ package sample
 
 import "github.com/enjoypi/god/def"
 
-type conf struct {
+type option struct {
 	Actors []struct {
 		Type string
 		def.ActorID

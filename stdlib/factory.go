@@ -1,6 +1,8 @@
 package stdlib
 
 import (
+	"strings"
+
 	"github.com/enjoypi/god/def"
 	"github.com/enjoypi/god/logger"
 	"go.uber.org/zap"
@@ -18,9 +20,10 @@ func newFactory() *factory {
 }
 
 func (am *factory) RegisterCreator(actorType def.ActorType, creator ActorCreator) bool {
-	_, ok := am.creators[actorType]
+	at := def.ActorType(strings.ToLower(strings.TrimSpace(string(actorType))))
+	_, ok := am.creators[at]
 	if ok {
-		logger.L.Error("the actor creator is already registered", zap.String("actorType", actorType.String()))
+		logger.L.Error("the actor creator is already registered", zap.String("actorType", string(actorType)))
 		return false
 	}
 	am.creators[actorType] = creator
@@ -28,14 +31,15 @@ func (am *factory) RegisterCreator(actorType def.ActorType, creator ActorCreator
 }
 
 func (am *factory) NewActor(actorType def.ActorType, id def.ActorID) Actor {
-	creator, ok := am.creators[actorType]
+	at := def.ActorType(strings.ToLower(strings.TrimSpace(string(actorType))))
+	creator, ok := am.creators[at]
 	if ok {
 		actor := creator()
 		actor.setType(actorType)
 		actor.setID(id)
 		return actor
 	}
-	logger.L.Error("no actor creator for this type", zap.String("actorType", actorType.String()))
+	logger.L.Error("no actor creator for this type", zap.String("actorType", string(actorType)))
 	return nil
 }
 

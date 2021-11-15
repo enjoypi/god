@@ -16,7 +16,7 @@ type conf struct {
 	ConnActor string
 }
 
-type actorNetListener struct {
+type actorSocketListener struct {
 	stdlib.SimpleActor
 	conf
 	listener net.Listener
@@ -24,7 +24,7 @@ type actorNetListener struct {
 	sup *stdlib.Supervisor
 }
 
-func (a *actorNetListener) Initialize(v *viper.Viper, sup *stdlib.Supervisor) error {
+func (a *actorSocketListener) Initialize(v *viper.Viper, sup *stdlib.Supervisor) error {
 	if err := v.Unmarshal(&a.conf); err != nil {
 		return err
 	}
@@ -37,7 +37,7 @@ func (a *actorNetListener) Initialize(v *viper.Viper, sup *stdlib.Supervisor) er
 	return nil
 }
 
-func (a *actorNetListener) onStart(message def.Message) def.Message {
+func (a *actorSocketListener) onStart(message def.Message) def.Message {
 
 	listener, err := net.Listen(a.Network, a.Address)
 	if err != nil {
@@ -59,10 +59,10 @@ func (a *actorNetListener) onStart(message def.Message) def.Message {
 	return nil
 }
 
-func newNetListener() stdlib.Actor {
-	return &actorNetListener{}
+func newSocketListener() stdlib.Actor {
+	return &actorSocketListener{}
 }
 
 func init() {
-	stdlib.RegisterActorCreator(def.ATNetListener, newNetListener)
+	stdlib.RegisterActorCreator(def.ATSocketListener, newSocketListener)
 }

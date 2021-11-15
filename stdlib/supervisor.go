@@ -58,7 +58,7 @@ func (sup *Supervisor) Start(v *viper.Viper, actorType def.ActorType, actorID de
 			case message := <-mq:
 				if ce := logger.L.Check(zapcore.DebugLevel, "RECV"); ce != nil {
 					ce.Write(
-						zap.String("type", actorType.String()),
+						zap.String("type", string(actorType)),
 						zap.Uint32("actor", actor.ID()),
 						zap.Any("message", sc.TypeOf(message)))
 				}

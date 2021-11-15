@@ -2,7 +2,7 @@ package god
 
 import (
 	_ "github.com/enjoypi/god/actors/implement"
-	_ "github.com/enjoypi/god/applications/kernel"
+	_ "github.com/enjoypi/god/applications"
 	"github.com/enjoypi/god/logger"
 	"github.com/enjoypi/god/options"
 	"github.com/enjoypi/god/stdlib"

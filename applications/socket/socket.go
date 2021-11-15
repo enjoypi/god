@@ -1,4 +1,4 @@
-package sample
+package socket
 
 import (
 	"github.com/enjoypi/god/def"
@@ -7,46 +7,44 @@ import (
 	"github.com/spf13/viper"
 )
 
-const name = "sample"
+const name = "socket"
 
 func init() {
-	stdlib.RegisterApplication(name, newSample)
+	stdlib.RegisterApplication(name, newSocket)
 }
 
-type sample struct {
+type Socket struct {
 	sup *stdlib.Supervisor
-
-	discovery stdlib.Actor
-	monitor   stdlib.Actor
-	messaging stdlib.Actor
 }
 
-func newSample(v *viper.Viper) (def.Application, error) {
+func newSocket(v *viper.Viper) (def.Application, error) {
 	sup, err := stdlib.NewSupervisor()
 	if err != nil {
 		return nil, err
 	}
 
-	return &sample{
+	return &Socket{
 		sup: sup,
 	}, nil
 }
 
-func (k *sample) PrepareStop() {
+func (k *Socket) PrepareStop() {
 
 }
 
-func (k *sample) Name() string {
+func (k *Socket) Name() string {
 	return name
 }
 
-func (k *sample) Start(v *viper.Viper) error {
-	var opt option
+func (k *Socket) Start(v *viper.Viper) error {
+	var opt struct {
+		Socket option
+	}
 	if err := v.Unmarshal(&opt); err != nil {
 		return err
 	}
 
-	for _, a := range opt.Actors {
+	for _, a := range opt.Socket.Actors {
 		actor, err := k.sup.Start(v, def.GetActorType(a.Type), a.ActorID)
 		if err != nil {
 			return err
@@ -56,6 +54,6 @@ func (k *sample) Start(v *viper.Viper) error {
 	return nil
 }
 
-func (k *sample) Stop() {
+func (k *Socket) Stop() {
 
 }

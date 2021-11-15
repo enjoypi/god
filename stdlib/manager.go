@@ -63,7 +63,7 @@ func (m *Manager) NewActor(actorType def.ActorType, id def.ActorID) Actor {
 
 	if _, loaded := m.actors.LoadOrStore(id, actor); loaded {
 		logger.L.Warn("exists actor",
-			zap.String("type", actorType.String()),
+			zap.String("type", string(actorType)),
 			zap.Uint32("id", id),
 		)
 	}

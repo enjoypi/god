@@ -2,7 +2,7 @@ package def
 
 import "github.com/enjoypi/gostatechart"
 
-type ActorType uint32
+type ActorType string
 type ActorID = uint32
 type Message = gostatechart.Event
 type MessageQueue chan Message
@@ -23,32 +23,25 @@ func EncodeID(id NodeID, actorID ActorID) FullID {
 	return (FullID(id) << 32) | FullID(actorID)
 }
 
-func (at ActorType) String() string {
-	if at >= ATUser {
-		return "User"
-	}
-	return actorTypeName[at]
-}
-
 func GetActorType(name string) ActorType {
 	if t, ok := nameTypeMap[name]; ok {
 		return t
 	}
-	return ATUser
+	return "User"
 }
 
 const (
-	ATSample      ActorType = 0
-	ATNats        ActorType = 1
-	ATEtcd        ActorType = 2
-	ATPrometheus  ActorType = 3
-	ATQuic        ActorType = 4
-	ATNetListener ActorType = 5
+	ATSample         = "sample"
+	ATNats           = "NATS"
+	ATEtcd           = "etcd"
+	ATPrometheus     = "Prometheus"
+	ATQuic           = "QUIC"
+	ATSocketListener = "SocketListener"
 
-	ATUser ActorType = 1000
+	ATUser = 1000
 )
 
-var actorTypeName = [...]string{"sample", "NATS", "etcd", "Prometheus", "QUIC", "NetListener"}
+var actorTypeName = [...]string{"sample", "etcd", "NATS", "Prometheus", "QUIC", "SocketListener"}
 
 var nameTypeMap = make(map[string]ActorType)
 
@@ -64,7 +57,7 @@ var KernelActors = []struct {
 	ActorType
 	ActorID
 }{
-	{ATEtcd, ActorID(ATEtcd)},
-	{ATNats, ActorID(ATNats)},
-	{ATPrometheus, ActorID(ATPrometheus)},
+	{ATEtcd, 1},
+	{ATNats, 2},
+	{ATPrometheus, 3},
 }

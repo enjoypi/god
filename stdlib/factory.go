@@ -1,4 +1,4 @@
-package actors
+package stdlib
 
 import (
 	"github.com/enjoypi/god/def"

@@ -3,7 +3,6 @@ package stdlib
 import (
 	"fmt"
 
-	"github.com/enjoypi/god/actors"
 	"github.com/enjoypi/god/def"
 	"github.com/enjoypi/god/events"
 	"github.com/enjoypi/god/logger"
@@ -37,18 +36,18 @@ func (sup *Supervisor) Handle(message def.Message) def.Message {
 func (sup *Supervisor) HandleActor(actor def.ActorID, message def.Message) {
 
 }
-func (sup *Supervisor) Start(v *viper.Viper, actorType def.ActorType, actorID def.ActorID) (actors.Actor, error) {
-	actor := actors.NewActor(actorType, actorID)
+func (sup *Supervisor) Start(v *viper.Viper, actorType def.ActorType, actorID def.ActorID) (Actor, error) {
+	actor := NewActor(actorType, actorID)
 	if actor == nil {
 		return nil, fmt.Errorf("invalid actor type")
 	}
 
 	// actor must be initial before using, or maybe lock
-	if err := actor.Initialize(v); err != nil {
+	if err := actor.Initialize(v, sup); err != nil {
 		return nil, err
 	}
 
-	actors.Go(func(exitChan actors.ExitChan) (def.Message, error) {
+	Go(func(exitChan ExitChan) (def.Message, error) {
 		defer actor.Terminate()
 
 		mq := actor.MessageQueue()

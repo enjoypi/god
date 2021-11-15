@@ -1,4 +1,4 @@
-package actors
+package stdlib
 
 import (
 	"fmt"
@@ -30,8 +30,8 @@ type DefaultImplement interface {
 }
 
 type Actor interface {
-	Initialize(v *viper.Viper) error // will be called by supervisor
-	Terminate()                      // will be called in actor's goroutine
+	Initialize(v *viper.Viper, sup *Supervisor) error // will be called by supervisor
+	Terminate()                                       // will be called in actor's goroutine
 
 	DefaultImplement
 }

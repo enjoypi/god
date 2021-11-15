@@ -30,7 +30,7 @@ func (at ActorType) String() string {
 	return actorTypeName[at]
 }
 
-func String2Type(name string) ActorType {
+func GetActorType(name string) ActorType {
 	if t, ok := nameTypeMap[name]; ok {
 		return t
 	}
@@ -42,12 +42,13 @@ const (
 	ATNats        ActorType = 1
 	ATEtcd        ActorType = 2
 	ATPrometheus  ActorType = 3
-	ATTCPListener           = 4
+	ATQuic        ActorType = 4
+	ATNetListener ActorType = 5
 
 	ATUser ActorType = 1000
 )
 
-var actorTypeName = [...]string{"sample", "NATS", "etcd", "Prometheus", "TCPListener"}
+var actorTypeName = [...]string{"sample", "NATS", "etcd", "Prometheus", "QUIC", "NetListener"}
 
 var nameTypeMap = make(map[string]ActorType)
 

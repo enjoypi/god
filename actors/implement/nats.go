@@ -3,11 +3,10 @@ package implement
 import (
 	"fmt"
 
-	"github.com/enjoypi/god/actors"
 	"github.com/enjoypi/god/def"
 	"github.com/enjoypi/god/events"
 	"github.com/enjoypi/god/logger"
-	"github.com/enjoypi/god/settings"
+	"github.com/enjoypi/god/options"
 	"github.com/enjoypi/god/stdlib"
 	"github.com/nats-io/nats.go"
 	"github.com/spf13/viper"
@@ -17,30 +16,28 @@ import (
 var conn *nats.Conn
 
 type actorNats struct {
-	actors.SimpleActor
+	stdlib.SimpleActor
 	nats.Options
 
-	config settings.Node
+	optNode options.Node
 	*viper.Viper
 }
 
-func (a *actorNats) Initialize(v *viper.Viper) error {
+func (a *actorNats) Initialize(v *viper.Viper, sup *stdlib.Supervisor) error {
 	_ = a.SimpleActor.Initialize()
 
-	type config struct {
+	var opt struct {
 		Nats nats.Options
-		settings.Node
+		options.Node
 	}
-	var cfg config
-
-	if err := v.Unmarshal(&cfg); err != nil {
+	if err := v.Unmarshal(&opt); err != nil {
 		return err
 	}
-	a.config = cfg.Node
+	a.optNode = opt.Node
 
 	a.Options = nats.GetDefaultOptions()
 	opts := &a.Options
-	opts.Url = cfg.Nats.Url
+	opts.Url = opt.Nats.Url
 	opts.DisconnectedErrCB = a.onDisconnected
 	opts.ReconnectedCB = a.onReconnected
 
@@ -71,7 +68,7 @@ func (a *actorNats) onStart(message def.Message) def.Message {
 	conn = nc
 	logger.L.Info("NATS connected", zap.String("url", conn.ConnectedUrl()))
 
-	subject := fmt.Sprintf("%d.*", a.config.ID)
+	subject := fmt.Sprintf("%d.*", a.optNode.ID)
 	_, err = conn.Subscribe(subject, a.onMsg)
 	if err != nil {
 		return err
@@ -114,7 +111,7 @@ func (a *actorNats) onMsg(msg *nats.Msg) {
 
 		logger.L.Debug("receive NATS Msg", zap.String("subject", msg.Subject), zap.Any("message", m))
 
-		actors.Post(actorID, m)
+		stdlib.Post(actorID, m)
 	})
 }
 
@@ -123,7 +120,7 @@ func natsMsg2Message(msg *nats.Msg) def.Message {
 }
 
 func init() {
-	actors.RegisterActorCreator(def.ATNats, func() actors.Actor {
+	stdlib.RegisterActorCreator(def.ATNats, func() stdlib.Actor {
 		return &actorNats{}
 	})
 }

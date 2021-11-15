@@ -1,23 +1,23 @@
 package god
 
 import (
-	"github.com/enjoypi/god/actors"
 	_ "github.com/enjoypi/god/actors/implement"
 	_ "github.com/enjoypi/god/applications/kernel"
 	"github.com/enjoypi/god/logger"
-	"github.com/enjoypi/god/settings"
+	"github.com/enjoypi/god/options"
 	"github.com/enjoypi/god/stdlib"
 	"github.com/spf13/viper"
 )
 
 func Initialize(v *viper.Viper) error {
-
 	if err := logger.Initialize(v); err != nil {
 		return err
 	}
 
-	var cfg settings.Node
-	if err := viper.Unmarshal(&cfg); err != nil {
+	var opt struct {
+		options.Node
+	}
+	if err := v.Unmarshal(&opt); err != nil {
 		return err
 	}
 
@@ -25,9 +25,9 @@ func Initialize(v *viper.Viper) error {
 		return err
 	}
 
-	return stdlib.StartApplications(v, cfg.Apps)
+	return stdlib.StartApplications(v, opt.Apps)
 }
 
 func Wait() {
-	actors.Wait()
+	stdlib.Wait()
 }

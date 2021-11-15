@@ -1,6 +1,8 @@
 package stdlib
 
 import (
+	"strings"
+
 	"github.com/enjoypi/god/def"
 	"github.com/spf13/viper"
 )
@@ -32,7 +34,7 @@ func StartApplications(v *viper.Viper, apps []string) error {
 }
 
 func StartApplication(v *viper.Viper, name string) error {
-	creator, ok := applicationFactory[name]
+	creator, ok := applicationFactory[strings.ToLower(strings.TrimSpace(name))]
 	if !ok {
 		return ErrNoSuchApplication
 	}
@@ -51,5 +53,5 @@ func StartApplication(v *viper.Viper, name string) error {
 }
 
 func RegisterApplication(name string, creator def.NewApplication) {
-	applicationFactory[name] = creator
+	applicationFactory[strings.ToLower(strings.TrimSpace(name))] = creator
 }

@@ -1,7 +1,6 @@
 package sample
 
 import (
-	"github.com/enjoypi/god/actors"
 	"github.com/enjoypi/god/def"
 	"github.com/enjoypi/god/events"
 	"github.com/enjoypi/god/stdlib"
@@ -17,9 +16,9 @@ func init() {
 type sample struct {
 	sup *stdlib.Supervisor
 
-	discovery actors.Actor
-	monitor   actors.Actor
-	messaging actors.Actor
+	discovery stdlib.Actor
+	monitor   stdlib.Actor
+	messaging stdlib.Actor
 }
 
 func newSample(v *viper.Viper) (def.Application, error) {
@@ -48,7 +47,7 @@ func (k *sample) Start(v *viper.Viper) error {
 	}
 
 	for _, a := range c.Actors {
-		actor, err := k.sup.Start(v, def.String2Type(a.Type), a.ActorID)
+		actor, err := k.sup.Start(v, def.GetActorType(a.Type), a.ActorID)
 		if err != nil {
 			return err
 		}

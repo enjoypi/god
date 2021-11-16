@@ -139,8 +139,8 @@ package mesh
 //	}
 //}
 //
-//func (m *main) onEvents(events []*etcdclient.Event) {
-//	for _, e := range events {
+//func (m *main) onEvents(event []*etcdclient.Event) {
+//	for _, e := range event {
 //		if e.IsCreate() {
 //			m.Logger.Debug("created",
 //				zap.ByteString("key", e.Kv.Key),

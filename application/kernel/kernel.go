@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/enjoypi/god/def"
-	"github.com/enjoypi/god/events"
+	"github.com/enjoypi/god/event"
 	"github.com/enjoypi/god/stdlib"
 	"github.com/spf13/viper"
 )
@@ -45,7 +45,7 @@ func (k *kernel) Start(v *viper.Viper) error {
 			return err
 		}
 		ctx, _ := context.WithCancel(context.Background())
-		actor.Post(ctx, &events.EvStart{})
+		actor.Post(ctx, &event.EvStart{})
 	}
 	return nil
 }

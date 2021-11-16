@@ -27,7 +27,7 @@ var (
 
 func init() {
 	defaultManager = NewManager()
-	defaultActorID.Store(uint32(def.ATUser))
+	defaultActorID.Store(uint32(def.AIDUser))
 }
 
 func NewManager() *Manager {

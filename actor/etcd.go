@@ -1,10 +1,10 @@
-package implement
+package actor
 
 import (
 	"context"
 
 	"github.com/enjoypi/god/def"
-	"github.com/enjoypi/god/events"
+	"github.com/enjoypi/god/event"
 	"github.com/enjoypi/god/stdlib"
 	"github.com/spf13/viper"
 )
@@ -15,7 +15,7 @@ type actorEtcd struct {
 
 func (a *actorEtcd) Initialize(v *viper.Viper) error {
 	_ = a.SimpleActor.Initialize()
-	a.RegisterReaction((*events.EvStart)(nil), a.onStart)
+	a.RegisterReaction((*event.EvStart)(nil), a.onStart)
 	return nil
 }
 

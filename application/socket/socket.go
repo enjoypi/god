@@ -3,8 +3,10 @@ package socket
 import (
 	"context"
 
+	"github.com/enjoypi/god/option"
+
 	"github.com/enjoypi/god/def"
-	"github.com/enjoypi/god/events"
+	"github.com/enjoypi/god/event"
 	"github.com/enjoypi/god/stdlib"
 	"github.com/spf13/viper"
 )
@@ -39,8 +41,11 @@ func (k *Socket) Name() string {
 }
 
 func (k *Socket) Start(v *viper.Viper) error {
+	type optionSocket struct {
+		Listener []option.Listen
+	}
 	var opt struct {
-		Socket option
+		Socket optionSocket
 	}
 	if err := v.Unmarshal(&opt); err != nil {
 		return err
@@ -53,7 +58,7 @@ func (k *Socket) Start(v *viper.Viper) error {
 		}
 
 		ctx := context.WithValue(context.Background(), "option", l)
-		actor.Post(ctx, &events.EvStart{})
+		actor.Post(ctx, &event.EvStart{})
 	}
 	return nil
 }

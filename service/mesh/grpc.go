@@ -2,7 +2,7 @@ package mesh
 
 //import (
 //	"github.com/enjoypi/god/pb"
-//	"github.com/enjoypi/god/services/net"
+//	"github.com/enjoypi/god/service/net"
 //	sc "github.com/enjoypi/gostatechart"
 //	"go.uber.org/zap"
 //)

@@ -1,10 +1,10 @@
 package god
 
 import (
-	_ "github.com/enjoypi/god/actors/implement"
-	_ "github.com/enjoypi/god/applications"
+	_ "github.com/enjoypi/god/actor"
+	_ "github.com/enjoypi/god/application"
 	"github.com/enjoypi/god/logger"
-	"github.com/enjoypi/god/options"
+	"github.com/enjoypi/god/option"
 	"github.com/enjoypi/god/stdlib"
 	"github.com/spf13/viper"
 )
@@ -15,7 +15,7 @@ func Initialize(v *viper.Viper) error {
 	}
 
 	var opt struct {
-		options.Node
+		option.Node
 	}
 	if err := v.Unmarshal(&opt); err != nil {
 		return err

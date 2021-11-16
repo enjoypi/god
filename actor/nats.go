@@ -1,13 +1,13 @@
-package implement
+package actor
 
 import (
 	"context"
 	"fmt"
 
 	"github.com/enjoypi/god/def"
-	"github.com/enjoypi/god/events"
+	"github.com/enjoypi/god/event"
 	"github.com/enjoypi/god/logger"
-	"github.com/enjoypi/god/options"
+	"github.com/enjoypi/god/option"
 	"github.com/enjoypi/god/stdlib"
 	"github.com/nats-io/nats.go"
 	"github.com/spf13/viper"
@@ -20,7 +20,7 @@ type actorNats struct {
 	stdlib.SimpleActor
 	nats.Options
 
-	optNode options.Node
+	optNode option.Node
 	*viper.Viper
 }
 
@@ -29,7 +29,7 @@ func (a *actorNats) Initialize(v *viper.Viper) error {
 
 	var opt struct {
 		Nats nats.Options
-		options.Node
+		option.Node
 	}
 	if err := v.Unmarshal(&opt); err != nil {
 		return err
@@ -44,11 +44,11 @@ func (a *actorNats) Initialize(v *viper.Viper) error {
 
 	logger.L.Info("initialize NATS",
 		zap.Uint32("actor", a.ID()),
-		zap.String("options", fmt.Sprintf("%+v", opts)))
+		zap.String("option", fmt.Sprintf("%+v", opts)))
 
 	a.RegisterReaction(error(nil), a.onError)
 	a.RegisterReaction("", a.onString)
-	a.RegisterReaction((*events.EvStart)(nil), a.onStart)
+	a.RegisterReaction((*event.EvStart)(nil), a.onStart)
 	return nil
 }
 
@@ -86,7 +86,7 @@ func (a *actorNats) onDisconnected(nc *nats.Conn, err error) {
 	stdlib.Catch(func() {
 		conn = nil
 		logger.L.Warn("NATS disconnected", zap.Error(err), zap.String("url", nc.Opts.Url))
-		a.Post(context.Background(), events.EvBusDisconnected{})
+		a.Post(context.Background(), event.EvBusDisconnected{})
 	})
 }
 
@@ -96,7 +96,7 @@ func (a *actorNats) onReconnected(nc *nats.Conn) {
 			conn = nc
 		}
 		logger.L.Info("NATS reconnected", zap.String("url", nc.ConnectedUrl()))
-		a.Post(context.Background(), events.EvBusReconnected{})
+		a.Post(context.Background(), event.EvBusReconnected{})
 	})
 }
 

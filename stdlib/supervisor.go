@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/enjoypi/god/def"
-	"github.com/enjoypi/god/events"
+	"github.com/enjoypi/god/event"
 	"github.com/enjoypi/god/logger"
 	sc "github.com/enjoypi/gostatechart"
 	"github.com/spf13/viper"
@@ -13,7 +13,7 @@ import (
 )
 
 type Supervisor struct {
-	//actors.SimpleActor
+	//actor.SimpleActor
 }
 
 func NewSupervisor() (*Supervisor, error) {
@@ -66,7 +66,7 @@ func (sup *Supervisor) Start(v *viper.Viper, actorType def.ActorType, actorID de
 					logger.L.Warn("handle wrong", zap.Error(err))
 				}
 			case <-exitChan:
-				return &events.EvStopped{}, nil
+				return &event.EvStopped{}, nil
 			}
 		}
 	}, func(message def.Message, err error) {

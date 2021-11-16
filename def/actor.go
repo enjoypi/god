@@ -37,11 +37,10 @@ const (
 	ATPrometheus     = "Prometheus"
 	ATQuic           = "QUIC"
 	ATSocketListener = "SocketListener"
+	ATTcp            = "TCP"
 
-	ATUser = 1000
+	AIDUser = 1000
 )
-
-var actorTypeName = [...]string{"sample", "etcd", "NATS", "Prometheus", "QUIC", "SocketListener"}
 
 // KernelActors
 //It use actor type as actor ID because of only one actor each type

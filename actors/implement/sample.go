@@ -1,6 +1,8 @@
 package implement
 
 import (
+	"context"
+
 	"github.com/enjoypi/god/def"
 	"github.com/enjoypi/god/events"
 	"github.com/enjoypi/god/stdlib"
@@ -17,7 +19,7 @@ func (a *actorSample) Initialize(v *viper.Viper) error {
 	return nil
 }
 
-func (a *actorSample) onStart(message def.Message) def.Message {
+func (a *actorSample) onStart(ctx context.Context, message def.Message) def.Message {
 	return nil
 }
 

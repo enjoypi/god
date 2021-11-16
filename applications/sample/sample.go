@@ -1,6 +1,8 @@
 package sample
 
 import (
+	"context"
+
 	"github.com/enjoypi/god/def"
 	"github.com/enjoypi/god/events"
 	"github.com/enjoypi/god/stdlib"
@@ -51,7 +53,7 @@ func (k *sample) Start(v *viper.Viper) error {
 		if err != nil {
 			return err
 		}
-		actor.Post(&events.EvStart{})
+		actor.Post(context.Background(), &events.EvStart{})
 	}
 	return nil
 }

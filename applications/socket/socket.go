@@ -1,6 +1,8 @@
 package socket
 
 import (
+	"context"
+
 	"github.com/enjoypi/god/def"
 	"github.com/enjoypi/god/events"
 	"github.com/enjoypi/god/stdlib"
@@ -44,12 +46,14 @@ func (k *Socket) Start(v *viper.Viper) error {
 		return err
 	}
 
-	for _, a := range opt.Socket.Listener {
-		actor, err := k.sup.Start(v, a.ActorType, a.ActorID)
+	for _, l := range opt.Socket.Listener {
+		actor, err := k.sup.Start(v, l.ActorType, l.ActorID)
 		if err != nil {
 			return err
 		}
-		actor.Post(&events.EvStart{})
+
+		ctx := context.WithValue(context.Background(), "option", l)
+		actor.Post(ctx, &events.EvStart{})
 	}
 	return nil
 }

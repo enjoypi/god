@@ -55,14 +55,14 @@ func (sup *Supervisor) Start(v *viper.Viper, actorType def.ActorType, actorID de
 		for {
 
 			select {
-			case message := <-mq:
+			case m := <-mq:
 				if ce := logger.L.Check(zapcore.DebugLevel, "RECV"); ce != nil {
 					ce.Write(
 						zap.String("type", string(actorType)),
 						zap.Uint32("actor", actor.ID()),
-						zap.Any("message", sc.TypeOf(message)))
+						zap.Any("message", sc.TypeOf(m.Message)))
 				}
-				if err := actor.Handle(message); err != nil {
+				if err := actor.Handle(m.Context, m.Message); err != nil {
 					logger.L.Warn("handle wrong", zap.Error(err))
 				}
 			case <-exitChan:

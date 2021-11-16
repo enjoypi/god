@@ -1,6 +1,7 @@
 package implement
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/enjoypi/god/def"
@@ -51,12 +52,12 @@ func (a *actorNats) Initialize(v *viper.Viper) error {
 	return nil
 }
 
-func (a *actorNats) onError(message def.Message) def.Message {
+func (a *actorNats) onError(ctx context.Context, message def.Message) def.Message {
 	logger.L.Error("error message", zap.Error(message.(error)))
 	return nil
 }
 
-func (a *actorNats) onStart(message def.Message) def.Message {
+func (a *actorNats) onStart(ctx context.Context, message def.Message) def.Message {
 	opts := a.Options
 	nc, err := opts.Connect()
 	if err != nil {
@@ -76,7 +77,7 @@ func (a *actorNats) onStart(message def.Message) def.Message {
 	return nil
 }
 
-func (a *actorNats) onString(message def.Message) def.Message {
+func (a *actorNats) onString(ctx context.Context, message def.Message) def.Message {
 	logger.L.Debug("on string", zap.String("message", message.(string)))
 	return nil
 }
@@ -85,7 +86,7 @@ func (a *actorNats) onDisconnected(nc *nats.Conn, err error) {
 	stdlib.Catch(func() {
 		conn = nil
 		logger.L.Warn("NATS disconnected", zap.Error(err), zap.String("url", nc.Opts.Url))
-		a.Post(events.EvBusDisconnected{})
+		a.Post(context.Background(), events.EvBusDisconnected{})
 	})
 }
 
@@ -95,7 +96,7 @@ func (a *actorNats) onReconnected(nc *nats.Conn) {
 			conn = nc
 		}
 		logger.L.Info("NATS reconnected", zap.String("url", nc.ConnectedUrl()))
-		a.Post(events.EvBusReconnected{})
+		a.Post(context.Background(), events.EvBusReconnected{})
 	})
 }
 
@@ -111,7 +112,7 @@ func (a *actorNats) onMsg(msg *nats.Msg) {
 
 		logger.L.Debug("receive NATS Msg", zap.String("subject", msg.Subject), zap.Any("message", m))
 
-		stdlib.Post(actorID, m)
+		stdlib.Post(context.Background(), actorID, m)
 	})
 }
 

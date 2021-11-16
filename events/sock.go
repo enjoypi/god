@@ -2,6 +2,6 @@ package events
 
 import "net"
 
-type EvNetConnected struct {
+type EvSocketConnected struct {
 	net.Conn
 }

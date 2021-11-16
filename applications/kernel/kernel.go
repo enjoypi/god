@@ -1,6 +1,8 @@
 package kernel
 
 import (
+	"context"
+
 	"github.com/enjoypi/god/def"
 	"github.com/enjoypi/god/events"
 	"github.com/enjoypi/god/stdlib"
@@ -42,7 +44,8 @@ func (k *kernel) Start(v *viper.Viper) error {
 		if err != nil {
 			return err
 		}
-		actor.Post(&events.EvStart{})
+		ctx, _ := context.WithCancel(context.Background())
+		actor.Post(ctx, &events.EvStart{})
 	}
 	return nil
 }

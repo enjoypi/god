@@ -1,6 +1,8 @@
 package test
 
 import (
+	"context"
+
 	"github.com/enjoypi/god/def"
 	"github.com/enjoypi/god/stdlib"
 	"github.com/spf13/viper"
@@ -14,7 +16,7 @@ type sampleActor struct {
 var _ stdlib.Actor = (*sampleActor)(nil)
 var logger *zap.Logger
 
-func (s *sampleActor) Handle(message def.Message) error {
+func (s *sampleActor) Handle(ctx context.Context, message def.Message) error {
 	logger.Debug("handle", zap.Any("message", message))
 	return nil
 }

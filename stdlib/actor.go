@@ -1,6 +1,7 @@
 package stdlib
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/enjoypi/god/def"
@@ -9,14 +10,13 @@ import (
 )
 
 type Handler interface {
-	Handle(message def.Message) error // will be called in actor's goroutine
+	Handle(ctx context.Context, message def.Message) error // will be called in actor's goroutine
 }
 
 type Receiver interface {
-	Post(message def.Message) // post message to actor's message queue, must thread safe
+	Post(ctx context.Context, message def.Message) // post message to actor's message queue, must thread safe
 }
 
-type handle func(message def.Message) def.Message // will be called in actor's goroutine
 type DefaultImplement interface {
 	ID() def.ActorID
 	Type() def.ActorType
@@ -50,7 +50,7 @@ func (a *SimpleActor) Initialize() error {
 	return fmt.Errorf("no Initialize implment")
 }
 
-func (a *SimpleActor) Handle(message def.Message) error {
+func (a *SimpleActor) Handle(ctx context.Context, message def.Message) error {
 	//if !ok {
 	//	logger.L.Warn("invalid reactor in actor",
 	//		zap.String("type", a.actorType),
@@ -59,9 +59,9 @@ func (a *SimpleActor) Handle(message def.Message) error {
 	//	)
 	//	return nil
 	//}
-	ret := a.SimpleState.React(message)
+	ret := a.SimpleState.React(ctx, message)
 	if ret != nil {
-		a.Post(ret)
+		a.Post(ctx, ret)
 	}
 
 	return nil
@@ -77,14 +77,17 @@ func (a *SimpleActor) Type() def.ActorType {
 
 // no any check for performance
 // Post will lock if the mq has not been initial
-func (a *SimpleActor) Post(message def.Message) {
+func (a *SimpleActor) Post(ctx context.Context, message def.Message) {
 	//if ce := logger.L.Check(zapcore.DebugLevel, "POST"); ce != nil {
 	//	ce.Write(
 	//		zap.String("type", a.actorType.String()),
 	//		zap.Uint32("actor", a.id),
 	//		zap.Any("message", sc.TypeOf(message)))
 	//}
-	a.mq <- message
+	a.mq <- struct {
+		context.Context
+		def.Message
+	}{ctx, message}
 }
 
 func (a *SimpleActor) Terminate() {

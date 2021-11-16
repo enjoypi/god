@@ -1,6 +1,7 @@
 package test
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -14,9 +15,10 @@ func TestNewSupervisor(t *testing.T) {
 
 	a, _ := sup.Start(nil, sampleActorType, 0)
 	require.NotNil(t, a)
-	a.Post("hello")
+	ctx := context.Background()
+	a.Post(ctx, "hello")
 	go func() {
-		a.Post("word")
+		a.Post(ctx, "word")
 		time.Sleep(time.Second)
 		stdlib.Close()
 	}()

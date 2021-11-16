@@ -1,11 +1,18 @@
 package def
 
-import "github.com/enjoypi/gostatechart"
+import (
+	"context"
+
+	"github.com/enjoypi/gostatechart"
+)
 
 type ActorType string
 type ActorID = uint32
 type Message = gostatechart.Event
-type MessageQueue chan Message
+type MessageQueue chan struct {
+	context.Context
+	Message
+}
 type NodeID = uint16
 type FullID = uint64
 
@@ -35,14 +42,6 @@ const (
 )
 
 var actorTypeName = [...]string{"sample", "etcd", "NATS", "Prometheus", "QUIC", "SocketListener"}
-
-var nameTypeMap = make(map[string]ActorType)
-
-func init() {
-	for i, name := range actorTypeName {
-		nameTypeMap[name] = ActorType(i)
-	}
-}
 
 // KernelActors
 //It use actor type as actor ID because of only one actor each type

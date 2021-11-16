@@ -1,6 +1,7 @@
 package stdlib
 
 import (
+	"context"
 	"sync"
 
 	"github.com/enjoypi/god/def"
@@ -70,10 +71,10 @@ func (m *Manager) NewActor(actorType def.ActorType, id def.ActorID) Actor {
 	return actor
 }
 
-func (m *Manager) Post(receiver def.ActorID, message def.Message) {
+func (m *Manager) Post(ctx context.Context, receiver def.ActorID, message def.Message) {
 	actor := m.Get(receiver)
 	if actor != nil {
-		actor.Post(message)
+		actor.Post(ctx, message)
 		return
 	}
 }
@@ -97,8 +98,8 @@ func NewActor(actorType def.ActorType, id def.ActorID) Actor {
 	return defaultManager.NewActor(actorType, id)
 }
 
-func Post(receiver def.ActorID, message def.Message) {
-	defaultManager.Post(receiver, message)
+func Post(ctx context.Context, receiver def.ActorID, message def.Message) {
+	defaultManager.Post(ctx, receiver, message)
 }
 
 func Wait() {

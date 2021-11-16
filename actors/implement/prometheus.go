@@ -1,6 +1,8 @@
 package implement
 
 import (
+	"context"
+
 	"github.com/enjoypi/god/def"
 	"github.com/enjoypi/god/events"
 	"github.com/enjoypi/god/stdlib"
@@ -19,7 +21,7 @@ func (a *actorPrometheus) Initialize(v *viper.Viper) error {
 	return nil
 }
 
-func (a *actorPrometheus) onStart(message def.Message) def.Message {
+func (a *actorPrometheus) onStart(ctx context.Context, message def.Message) def.Message {
 	return nil
 }
 func newPrometheus() stdlib.Actor {

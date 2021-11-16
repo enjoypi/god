@@ -21,10 +21,6 @@ func Initialize(v *viper.Viper) error {
 		return err
 	}
 
-	if err := stdlib.StartApplication(v, "kernel"); err != nil {
-		return err
-	}
-
 	return stdlib.StartApplications(v, opt.Apps)
 }
 

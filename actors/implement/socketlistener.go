@@ -1,6 +1,7 @@
 package implement
 
 import (
+	"context"
 	"net"
 
 	"github.com/enjoypi/god/def"
@@ -10,25 +11,14 @@ import (
 	"github.com/spf13/viper"
 )
 
-type conf struct {
-	Network   string
-	Address   string
-	ConnActor def.ActorType
-}
-
 type actorSocketListener struct {
 	stdlib.SimpleActor
-	conf
 	listener net.Listener
 	*viper.Viper
 	sup *stdlib.Supervisor
 }
 
 func (a *actorSocketListener) Initialize(v *viper.Viper) error {
-	if err := v.Unmarshal(&a.conf); err != nil {
-		return err
-	}
-
 	_ = a.SimpleActor.Initialize()
 	a.RegisterReaction((*events.EvStart)(nil), a.onStart)
 
@@ -37,9 +27,10 @@ func (a *actorSocketListener) Initialize(v *viper.Viper) error {
 	return nil
 }
 
-func (a *actorSocketListener) onStart(message def.Message) def.Message {
+func (a *actorSocketListener) onStart(ctx context.Context, message def.Message) def.Message {
 
-	listener, err := net.Listen(a.Network, a.Address)
+	opt := ctx.Value("option").(def.OptionListen)
+	listener, err := net.Listen(opt.Network, opt.Address)
 	if err != nil {
 		return err
 	}
@@ -50,10 +41,10 @@ func (a *actorSocketListener) onStart(message def.Message) def.Message {
 			conn, err := a.listener.Accept()
 			logger.CheckError("net accept", err)
 
-			actor, err := a.sup.Start(a.Viper, a.conf.ConnActor, 0)
+			actor, err := a.sup.Start(a.Viper, opt.Handler, 0)
 			logger.CheckError("start net actor", err)
 
-			actor.Post(&events.EvNetConnected{Conn: conn})
+			actor.Post(context.Background(), &events.EvSocketConnected{Conn: conn})
 		}
 	})
 	return nil

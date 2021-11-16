@@ -23,13 +23,6 @@ func EncodeID(id NodeID, actorID ActorID) FullID {
 	return (FullID(id) << 32) | FullID(actorID)
 }
 
-func GetActorType(name string) ActorType {
-	if t, ok := nameTypeMap[name]; ok {
-		return t
-	}
-	return "User"
-}
-
 const (
 	ATSample         = "sample"
 	ATNats           = "NATS"

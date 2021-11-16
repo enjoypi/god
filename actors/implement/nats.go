@@ -23,7 +23,7 @@ type actorNats struct {
 	*viper.Viper
 }
 
-func (a *actorNats) Initialize(v *viper.Viper, sup *stdlib.Supervisor) error {
+func (a *actorNats) Initialize(v *viper.Viper) error {
 	_ = a.SimpleActor.Initialize()
 
 	var opt struct {

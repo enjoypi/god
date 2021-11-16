@@ -25,7 +25,7 @@ func (s *sampleActor) Initialize(v *viper.Viper) error {
 	return nil
 }
 
-var sampleActorType = def.ATUser + 1
+const sampleActorType = "testActor"
 
 func init() {
 	logger, _ = zap.NewDevelopment()

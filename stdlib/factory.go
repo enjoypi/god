@@ -44,5 +44,6 @@ func (am *factory) NewActor(actorType def.ActorType, id def.ActorID) Actor {
 }
 
 func RegisterActorCreator(actorType def.ActorType, creator ActorCreator) bool {
-	return defaultFactory.RegisterCreator(actorType, creator)
+	at := def.ActorType(strings.ToLower(strings.TrimSpace(string(actorType))))
+	return defaultFactory.RegisterCreator(at, creator)
 }

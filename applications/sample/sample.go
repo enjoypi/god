@@ -47,7 +47,7 @@ func (k *sample) Start(v *viper.Viper) error {
 	}
 
 	for _, a := range opt.Actors {
-		actor, err := k.sup.Start(v, def.GetActorType(a.Type), a.ActorID)
+		actor, err := k.sup.Start(v, a.ActorType, a.ActorID)
 		if err != nil {
 			return err
 		}

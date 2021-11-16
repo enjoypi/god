@@ -43,7 +43,7 @@ func (sup *Supervisor) Start(v *viper.Viper, actorType def.ActorType, actorID de
 	}
 
 	// actor must be initial before using, or maybe lock
-	if err := actor.Initialize(v, sup); err != nil {
+	if err := actor.Initialize(v); err != nil {
 		return nil, err
 	}
 

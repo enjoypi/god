@@ -13,7 +13,7 @@ import (
 type conf struct {
 	Network   string
 	Address   string
-	ConnActor string
+	ConnActor def.ActorType
 }
 
 type actorSocketListener struct {
@@ -24,7 +24,7 @@ type actorSocketListener struct {
 	sup *stdlib.Supervisor
 }
 
-func (a *actorSocketListener) Initialize(v *viper.Viper, sup *stdlib.Supervisor) error {
+func (a *actorSocketListener) Initialize(v *viper.Viper) error {
 	if err := v.Unmarshal(&a.conf); err != nil {
 		return err
 	}
@@ -33,7 +33,7 @@ func (a *actorSocketListener) Initialize(v *viper.Viper, sup *stdlib.Supervisor)
 	a.RegisterReaction((*events.EvStart)(nil), a.onStart)
 
 	a.Viper = v
-	a.sup = sup
+	//a.sup = sup
 	return nil
 }
 
@@ -50,7 +50,7 @@ func (a *actorSocketListener) onStart(message def.Message) def.Message {
 			conn, err := a.listener.Accept()
 			logger.CheckError("net accept", err)
 
-			actor, err := a.sup.Start(a.Viper, def.GetActorType(a.conf.ConnActor), 0)
+			actor, err := a.sup.Start(a.Viper, a.conf.ConnActor, 0)
 			logger.CheckError("start net actor", err)
 
 			actor.Post(&events.EvNetConnected{Conn: conn})

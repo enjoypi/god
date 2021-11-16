@@ -44,8 +44,8 @@ func (k *Socket) Start(v *viper.Viper) error {
 		return err
 	}
 
-	for _, a := range opt.Socket.Actors {
-		actor, err := k.sup.Start(v, def.GetActorType(a.Type), a.ActorID)
+	for _, a := range opt.Socket.Listener {
+		actor, err := k.sup.Start(v, a.ActorType, a.ActorID)
 		if err != nil {
 			return err
 		}

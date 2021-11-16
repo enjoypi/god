@@ -11,7 +11,7 @@ type actorSample struct {
 	stdlib.SimpleActor
 }
 
-func (a *actorSample) Initialize(v *viper.Viper, sup *stdlib.Supervisor) error {
+func (a *actorSample) Initialize(v *viper.Viper) error {
 	_ = a.SimpleActor.Initialize()
 	a.RegisterReaction((*events.EvStart)(nil), a.onStart)
 	return nil

@@ -11,7 +11,7 @@ type actorEtcd struct {
 	stdlib.SimpleActor
 }
 
-func (a *actorEtcd) Initialize(v *viper.Viper, sup *stdlib.Supervisor) error {
+func (a *actorEtcd) Initialize(v *viper.Viper) error {
 	_ = a.SimpleActor.Initialize()
 	a.RegisterReaction((*events.EvStart)(nil), a.onStart)
 	return nil

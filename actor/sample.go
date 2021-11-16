@@ -19,7 +19,7 @@ func (a *actorSample) Initialize(v *viper.Viper) error {
 	return nil
 }
 
-func (a *actorSample) onStart(ctx context.Context, message def.Message) def.Message {
+func (a *actorSample) onStart(ctx context.Context, message def.Message, args ...interface{}) def.Message {
 	return nil
 }
 

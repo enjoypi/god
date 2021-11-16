@@ -38,6 +38,7 @@ const (
 	ATQuic           = "QUIC"
 	ATSocketListener = "SocketListener"
 	ATTcp            = "TCP"
+	ATUdp            = "UDP"
 
 	AIDUser = 1000
 )

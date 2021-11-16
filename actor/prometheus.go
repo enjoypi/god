@@ -21,7 +21,7 @@ func (a *actorPrometheus) Initialize(v *viper.Viper) error {
 	return nil
 }
 
-func (a *actorPrometheus) onStart(ctx context.Context, message def.Message) def.Message {
+func (a *actorPrometheus) onStart(ctx context.Context, message def.Message, args ...interface{}) def.Message {
 	return nil
 }
 func newPrometheus() stdlib.Actor {

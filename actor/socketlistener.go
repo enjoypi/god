@@ -4,6 +4,8 @@ import (
 	"context"
 	"net"
 
+	"go.uber.org/zap"
+
 	"github.com/enjoypi/god/option"
 
 	"github.com/enjoypi/god/def"
@@ -17,7 +19,6 @@ type actorSocketListener struct {
 	stdlib.SimpleActor
 	listener net.Listener
 	*viper.Viper
-	sup *stdlib.Supervisor
 }
 
 func (a *actorSocketListener) Initialize(v *viper.Viper) error {
@@ -25,11 +26,10 @@ func (a *actorSocketListener) Initialize(v *viper.Viper) error {
 	a.RegisterReaction((*event.EvStart)(nil), a.onStart)
 
 	a.Viper = v
-	//a.sup = sup
 	return nil
 }
 
-func (a *actorSocketListener) onStart(ctx context.Context, message def.Message) def.Message {
+func (a *actorSocketListener) onStart(ctx context.Context, message def.Message, args ...interface{}) def.Message {
 
 	opt := ctx.Value("option").(option.Listen)
 	listener, err := net.Listen(opt.Network, opt.Address)
@@ -41,12 +41,29 @@ func (a *actorSocketListener) onStart(ctx context.Context, message def.Message) 
 	go stdlib.Catch(func() {
 		for {
 			conn, err := a.listener.Accept()
-			logger.CheckError("net accept", err)
+			logger.PanicOnError("net accept", err)
+			logger.L.Debug("socket connected",
+				zap.String("network", conn.LocalAddr().Network()),
+				zap.String("local", conn.LocalAddr().String()),
+				zap.String("remote", conn.RemoteAddr().String()),
+			)
 
-			actor, err := a.sup.Start(a.Viper, opt.Handler, 0)
-			logger.CheckError("start net actor", err)
+			sup := args[0].(*stdlib.Supervisor)
 
-			actor.Post(context.Background(), &event.EvSocketConnected{Conn: conn})
+			var actor stdlib.Actor
+			switch conn.(type) {
+			case *net.TCPConn:
+				actor, err = sup.Start(a.Viper, def.ATTcp, 0)
+			case *net.UDPConn:
+				actor, err = sup.Start(a.Viper, def.ATUdp, 0)
+			}
+
+			if err != nil {
+				logger.L.Error("start actor failed", zap.Error(err))
+				continue
+			}
+
+			actor.Post(ctx, &event.EvSocketConnected{Conn: conn})
 		}
 	})
 	return nil

@@ -47,8 +47,8 @@ func Initialize(v *viper.Viper) error {
 	return nil
 }
 
-func CheckError(msg string, err error) {
+func PanicOnError(msg string, err error) {
 	if err != nil {
-		L.Error(msg, zap.Error(err))
+		L.Panic(msg, zap.Error(err))
 	}
 }

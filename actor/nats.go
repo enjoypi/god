@@ -52,12 +52,12 @@ func (a *actorNats) Initialize(v *viper.Viper) error {
 	return nil
 }
 
-func (a *actorNats) onError(ctx context.Context, message def.Message) def.Message {
+func (a *actorNats) onError(ctx context.Context, message def.Message, args ...interface{}) def.Message {
 	logger.L.Error("error message", zap.Error(message.(error)))
 	return nil
 }
 
-func (a *actorNats) onStart(ctx context.Context, message def.Message) def.Message {
+func (a *actorNats) onStart(ctx context.Context, message def.Message, args ...interface{}) def.Message {
 	opts := a.Options
 	nc, err := opts.Connect()
 	if err != nil {
@@ -77,7 +77,7 @@ func (a *actorNats) onStart(ctx context.Context, message def.Message) def.Messag
 	return nil
 }
 
-func (a *actorNats) onString(ctx context.Context, message def.Message) def.Message {
+func (a *actorNats) onString(ctx context.Context, message def.Message, args ...interface{}) def.Message {
 	logger.L.Debug("on string", zap.String("message", message.(string)))
 	return nil
 }

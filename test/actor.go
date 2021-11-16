@@ -16,7 +16,7 @@ type sampleActor struct {
 var _ stdlib.Actor = (*sampleActor)(nil)
 var logger *zap.Logger
 
-func (s *sampleActor) Handle(ctx context.Context, message def.Message) error {
+func (s *sampleActor) Handle(ctx context.Context, message def.Message, args ...interface{}) error {
 	logger.Debug("handle", zap.Any("message", message))
 	return nil
 }

@@ -10,7 +10,7 @@ import (
 )
 
 type Handler interface {
-	Handle(ctx context.Context, message def.Message) error // will be called in actor's goroutine
+	Handle(ctx context.Context, message def.Message, args ...interface{}) error // will be called in actor's goroutine
 }
 
 type Receiver interface {
@@ -50,7 +50,7 @@ func (a *SimpleActor) Initialize() error {
 	return fmt.Errorf("no Initialize implment")
 }
 
-func (a *SimpleActor) Handle(ctx context.Context, message def.Message) error {
+func (a *SimpleActor) Handle(ctx context.Context, message def.Message, args ...interface{}) error {
 	//if !ok {
 	//	logger.L.Warn("invalid reactor in actor",
 	//		zap.String("type", a.actorType),
@@ -59,7 +59,7 @@ func (a *SimpleActor) Handle(ctx context.Context, message def.Message) error {
 	//	)
 	//	return nil
 	//}
-	ret := a.SimpleState.React(ctx, message)
+	ret := a.SimpleState.React(ctx, message, args...)
 	if ret != nil {
 		a.Post(ctx, ret)
 	}

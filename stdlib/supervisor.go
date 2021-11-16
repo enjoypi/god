@@ -6,10 +6,8 @@ import (
 	"github.com/enjoypi/god/def"
 	"github.com/enjoypi/god/event"
 	"github.com/enjoypi/god/logger"
-	sc "github.com/enjoypi/gostatechart"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
 )
 
 type Supervisor struct {
@@ -56,13 +54,13 @@ func (sup *Supervisor) Start(v *viper.Viper, actorType def.ActorType, actorID de
 
 			select {
 			case m := <-mq:
-				if ce := logger.L.Check(zapcore.DebugLevel, "RECV"); ce != nil {
-					ce.Write(
-						zap.String("type", string(actorType)),
-						zap.Uint32("actor", actor.ID()),
-						zap.Any("message", sc.TypeOf(m.Message)))
-				}
-				if err := actor.Handle(m.Context, m.Message); err != nil {
+				//if ce := logger.L.Check(zapcore.DebugLevel, "RECV"); ce != nil {
+				//	ce.Write(
+				//		zap.String("type", string(actorType)),
+				//		zap.Uint32("actor", actor.ID()),
+				//		zap.Any("message", sc.TypeOf(m.Message)))
+				//}
+				if err := actor.Handle(m.Context, m.Message, sup); err != nil {
 					logger.L.Warn("handle wrong", zap.Error(err))
 				}
 			case <-exitChan:
